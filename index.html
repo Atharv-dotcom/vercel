@@ -515,6 +515,8 @@
   <i data-lucide="sun" class="hidden dark:block w-6 h-6"></i>
 </button>
 
+
+
 <script>
   // Global Theme Logic
   function toggleThemeGlobal() {
@@ -665,8 +667,8 @@
       <div id="loginForm">
         <div class="space-y-5">
           <div>
-            <label class="inp-label">Email Address</label>
-            <input id="loginId" class="inp" type="email" placeholder="you@email.com" autocomplete="username">
+            <label class="inp-label">Phone / Email</label>
+            <input id="loginId" class="inp" type="text" placeholder="9876543210 or you@email.com" autocomplete="username">
             <span class="inp-error" id="loginIdErr">Please enter your phone or email.</span>
           </div>
           <div>
@@ -692,7 +694,7 @@
         <!-- Demo note -->
         <div class="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-100 dark:border-blue-900/50">
           <p class="text-xs text-blue-700 dark:text-blue-300 font-medium">
-            <span class="font-bold">Note:</span> Sign up first with a real email & password — Firebase Auth will create your account. Then log in with those same credentials.
+            <span class="font-bold">Demo:</span> Use any phone/email + any 6+ char password to log in as an existing user, or sign up to go through the full onboarding flow.
           </p>
         </div>
       </div>
@@ -1119,21 +1121,21 @@
               <div class="w-13 h-13 w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center shrink-0"><i data-lucide="wallet" class="w-6 h-6"></i></div>
               <div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Today's Revenue</p>
-                <h3 id="statRevenue" class="text-2xl font-display font-extrabold text-slate-800 mt-1">₹1,250</h3>
+                <h3 id="statRevenue" class="text-2xl font-display font-extrabold text-slate-800 mt-1">₹0</h3>
               </div>
             </div>
             <div class="stat-card bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5">
               <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0"><i data-lucide="briefcase" class="w-6 h-6"></i></div>
               <div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Completed Jobs</p>
-                <h3 id="statJobs" class="text-2xl font-display font-extrabold text-slate-800 mt-1">4</h3>
+                <h3 id="statJobs" class="text-2xl font-display font-extrabold text-slate-800 mt-1">0</h3>
               </div>
             </div>
             <div class="stat-card bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5">
               <div class="w-12 h-12 bg-yellow-50 text-yellow-500 rounded-xl flex items-center justify-center shrink-0"><i data-lucide="star" class="w-6 h-6 fill-current"></i></div>
               <div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Avg. Rating</p>
-                <h3 class="text-2xl font-display font-extrabold text-slate-800 mt-1">4.9 <span class="text-sm text-slate-400 font-normal">/ 5.0</span></h3>
+                <h3 class="text-2xl font-display font-extrabold text-slate-800 mt-1"><span id="statRating">—</span><span class="text-sm text-slate-400 font-normal"> / 5.0</span></h3>
               </div>
             </div>
           </div>
@@ -1186,9 +1188,7 @@
                     <th class="py-4 px-6">Job ID</th><th class="py-4 px-6">Service</th><th class="py-4 px-6">Date</th><th class="py-4 px-6">Status</th><th class="py-4 px-6 text-right">Payout</th>
                   </tr></thead>
                   <tbody id="jobHistoryTable" class="text-sm">
-                    <tr class="border-b border-slate-50 hover:bg-slate-50/50"><td class="py-4 px-6 font-mono text-slate-400 text-xs">#FX-9021</td><td class="py-4 px-6 font-semibold">Pipe Leakage Fix</td><td class="py-4 px-6 text-slate-500">Today, 2:30 PM</td><td class="py-4 px-6"><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Completed</span></td><td class="py-4 px-6 text-right font-bold">₹350</td></tr>
-                    <tr class="border-b border-slate-50 hover:bg-slate-50/50"><td class="py-4 px-6 font-mono text-slate-400 text-xs">#FX-8994</td><td class="py-4 px-6 font-semibold">Washing Machine</td><td class="py-4 px-6 text-slate-500">Yesterday</td><td class="py-4 px-6"><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Completed</span></td><td class="py-4 px-6 text-right font-bold">₹800</td></tr>
-                    <tr class="border-b border-slate-50 hover:bg-slate-50/50"><td class="py-4 px-6 font-mono text-slate-400 text-xs">#FX-8871</td><td class="py-4 px-6 font-semibold">Fan Installation</td><td class="py-4 px-6 text-slate-500">2 days ago</td><td class="py-4 px-6"><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Completed</span></td><td class="py-4 px-6 text-right font-bold">₹250</td></tr>
+                    <tr id="jobHistoryEmpty"><td colspan="5" class="py-10 text-center text-slate-400 text-sm">No jobs yet. Accept a request to see your history here.</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -1220,11 +1220,12 @@
             </div>
           </div>
 
-          <!-- Simulate job button -->
+          <!-- Live requests status -->
           <div class="flex justify-center">
-            <button id="simulateJobBtn" onclick="simulateJob()" class="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white font-display font-bold rounded-2xl shadow-lg hover:shadow-orange-500/30 hover:-translate-y-1 transition-all">
-              <i data-lucide="zap" class="w-5 h-5"></i> Simulate Incoming Job Request
-            </button>
+            <div id="liveRequestStatus" class="flex items-center gap-3 px-8 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm text-sm font-semibold text-slate-500">
+              <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+              Go online to receive real job requests from customers
+            </div>
           </div>
         </div>
 
@@ -1244,18 +1245,14 @@
           </div>
           <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             <div class="px-6 py-5 border-b border-slate-100">
-              <h3 class="font-display font-bold text-slate-800">All My Jobs <span id="jobCount" class="text-slate-400 font-normal text-sm ml-2">(5 jobs)</span></h3>
+              <h3 class="font-display font-bold text-slate-800">All My Jobs <span id="jobCount" class="text-slate-400 font-normal text-sm ml-2">(0 jobs)</span></h3>
             </div>
             <table class="w-full text-left">
               <thead><tr class="bg-slate-50 border-b text-xs uppercase tracking-wider text-slate-400 font-bold">
                 <th class="py-4 px-6">Job ID</th><th class="py-4 px-6">Service</th><th class="py-4 px-6">Customer</th><th class="py-4 px-6">Date</th><th class="py-4 px-6">Status</th><th class="py-4 px-6 text-right">Payout</th>
               </tr></thead>
               <tbody id="allJobsTable" class="text-sm">
-                <tr class="border-b hover:bg-slate-50 job-row" data-status="Completed"><td class="py-4 px-6 font-mono text-xs text-slate-400">#FX-9021</td><td class="py-4 px-6 font-semibold">Pipe Leakage Fix</td><td class="py-4 px-6 text-slate-500">Suresh M.</td><td class="py-4 px-6 text-slate-500">Today, 2:30 PM</td><td class="py-4 px-6"><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Completed</span></td><td class="py-4 px-6 text-right font-bold">₹350</td></tr>
-                <tr class="border-b hover:bg-slate-50 job-row" data-status="Completed"><td class="py-4 px-6 font-mono text-xs text-slate-400">#FX-8994</td><td class="py-4 px-6 font-semibold">Washing Machine</td><td class="py-4 px-6 text-slate-500">Priya K.</td><td class="py-4 px-6 text-slate-500">Yesterday</td><td class="py-4 px-6"><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Completed</span></td><td class="py-4 px-6 text-right font-bold">₹800</td></tr>
-                <tr class="border-b hover:bg-slate-50 job-row" data-status="Completed"><td class="py-4 px-6 font-mono text-xs text-slate-400">#FX-8871</td><td class="py-4 px-6 font-semibold">Fan Installation</td><td class="py-4 px-6 text-slate-500">Rahul T.</td><td class="py-4 px-6 text-slate-500">2 days ago</td><td class="py-4 px-6"><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Completed</span></td><td class="py-4 px-6 text-right font-bold">₹250</td></tr>
-                <tr class="border-b hover:bg-slate-50 job-row" data-status="Completed"><td class="py-4 px-6 font-mono text-xs text-slate-400">#FX-8820</td><td class="py-4 px-6 font-semibold">AC Gas Refill</td><td class="py-4 px-6 text-slate-500">Anita R.</td><td class="py-4 px-6 text-slate-500">3 days ago</td><td class="py-4 px-6"><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Completed</span></td><td class="py-4 px-6 text-right font-bold">₹600</td></tr>
-                <tr class="border-b hover:bg-slate-50 job-row" data-status="Cancelled"><td class="py-4 px-6 font-mono text-xs text-slate-400">#FX-8770</td><td class="py-4 px-6 font-semibold">Electrical Wiring</td><td class="py-4 px-6 text-slate-500">Vikram S.</td><td class="py-4 px-6 text-slate-500">4 days ago</td><td class="py-4 px-6"><span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">Cancelled</span></td><td class="py-4 px-6 text-right text-slate-400">₹—</td></tr>
+                <tr id="allJobsEmpty"><td colspan="6" class="py-10 text-center text-slate-400 text-sm">No jobs yet. Accepted requests will appear here.</td></tr>
               </tbody>
             </table>
           </div>
@@ -1296,41 +1293,25 @@
 
         <!-- ══ REVIEWS VIEW ══ -->
         <div id="view-reviews" class="view-section space-y-6">
+          <!-- Rating summary — populated by loadReviews() -->
           <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 flex gap-10 items-center">
             <div class="text-center shrink-0">
-              <div class="text-6xl font-display font-extrabold text-slate-800">4.9</div>
-              <div class="flex gap-0.5 mt-2 justify-center text-yellow-400 text-xl">★★★★★</div>
-              <p class="text-xs text-slate-400 mt-1">47 reviews</p>
+              <div class="text-6xl font-display font-extrabold text-slate-800" id="reviewAvgScore">—</div>
+              <div class="flex gap-0.5 mt-2 justify-center text-yellow-400 text-xl" id="reviewAvgStars">☆☆☆☆☆</div>
+              <p class="text-xs text-slate-400 mt-1" id="reviewTotalCount">0 reviews</p>
             </div>
-            <div class="flex-1 space-y-2">
-              <div class="flex items-center gap-3"><span class="text-xs w-4 text-slate-500">5</span><div class="flex-1 bg-slate-100 rounded-full h-2"><div class="bg-yellow-400 h-2 rounded-full" style="width:86%"></div></div><span class="text-xs text-slate-500 w-8">86%</span></div>
-              <div class="flex items-center gap-3"><span class="text-xs w-4 text-slate-500">4</span><div class="flex-1 bg-slate-100 rounded-full h-2"><div class="bg-yellow-400 h-2 rounded-full" style="width:10%"></div></div><span class="text-xs text-slate-500 w-8">10%</span></div>
-              <div class="flex items-center gap-3"><span class="text-xs w-4 text-slate-500">3</span><div class="flex-1 bg-slate-100 rounded-full h-2"><div class="bg-yellow-400 h-2 rounded-full" style="width:4%"></div></div><span class="text-xs text-slate-500 w-8">4%</span></div>
-              <div class="flex items-center gap-3"><span class="text-xs w-4 text-slate-500">2</span><div class="flex-1 bg-slate-100 rounded-full h-2"><div class="bg-slate-200 h-2 rounded-full" style="width:0%"></div></div><span class="text-xs text-slate-500 w-8">0%</span></div>
-              <div class="flex items-center gap-3"><span class="text-xs w-4 text-slate-500">1</span><div class="flex-1 bg-slate-100 rounded-full h-2"><div class="bg-slate-200 h-2 rounded-full" style="width:0%"></div></div><span class="text-xs text-slate-500 w-8">0%</span></div>
+            <div class="flex-1 space-y-2" id="reviewBars">
+              <div class="flex items-center gap-3"><span class="text-xs w-4 text-slate-500">5</span><div class="flex-1 bg-slate-100 rounded-full h-2"><div id="bar5" class="bg-yellow-400 h-2 rounded-full" style="width:0%"></div></div><span class="text-xs text-slate-500 w-8" id="pct5">0%</span></div>
+              <div class="flex items-center gap-3"><span class="text-xs w-4 text-slate-500">4</span><div class="flex-1 bg-slate-100 rounded-full h-2"><div id="bar4" class="bg-yellow-400 h-2 rounded-full" style="width:0%"></div></div><span class="text-xs text-slate-500 w-8" id="pct4">0%</span></div>
+              <div class="flex items-center gap-3"><span class="text-xs w-4 text-slate-500">3</span><div class="flex-1 bg-slate-100 rounded-full h-2"><div id="bar3" class="bg-yellow-400 h-2 rounded-full" style="width:0%"></div></div><span class="text-xs text-slate-500 w-8" id="pct3">0%</span></div>
+              <div class="flex items-center gap-3"><span class="text-xs w-4 text-slate-500">2</span><div class="flex-1 bg-slate-100 rounded-full h-2"><div id="bar2" class="bg-slate-200 h-2 rounded-full" style="width:0%"></div></div><span class="text-xs text-slate-500 w-8" id="pct2">0%</span></div>
+              <div class="flex items-center gap-3"><span class="text-xs w-4 text-slate-500">1</span><div class="flex-1 bg-slate-100 rounded-full h-2"><div id="bar1" class="bg-slate-200 h-2 rounded-full" style="width:0%"></div></div><span class="text-xs text-slate-500 w-8" id="pct1">0%</span></div>
             </div>
           </div>
-          <div class="space-y-4">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-              <div class="flex justify-between items-start mb-3">
-                <div><p class="font-bold text-slate-800">Priya Kapoor</p><p class="text-yellow-400 text-sm">★★★★★</p></div>
-                <span class="text-xs text-slate-400">2 days ago</span>
-              </div>
-              <p class="text-slate-600 text-sm">Ramesh was super professional and fixed our washing machine in 30 minutes. Highly recommended!</p>
-            </div>
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-              <div class="flex justify-between items-start mb-3">
-                <div><p class="font-bold text-slate-800">Suresh Mehta</p><p class="text-yellow-400 text-sm">★★★★★</p></div>
-                <span class="text-xs text-slate-400">5 days ago</span>
-              </div>
-              <p class="text-slate-600 text-sm">Excellent work on the AC. Very punctual, good communication, fair pricing. Will call again!</p>
-            </div>
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-              <div class="flex justify-between items-start mb-3">
-                <div><p class="font-bold text-slate-800">Anita Sharma</p><p class="text-yellow-400 text-sm">★★★★☆</p></div>
-                <span class="text-xs text-slate-400">1 week ago</span>
-              </div>
-              <p class="text-slate-600 text-sm">Good job overall. Arrived a bit late but the repair was solid. Would use the service again.</p>
+          <!-- Individual review cards — populated by loadReviews() -->
+          <div id="reviewsList" class="space-y-4">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 text-center text-slate-400 text-sm">
+              No reviews yet. Reviews left by customers will appear here.
             </div>
           </div>
         </div>
@@ -1345,7 +1326,7 @@
                 <p class="text-slate-500" id="profileTrade">AC Technician · Pro Partner</p>
                 <div class="flex gap-2 mt-2">
                   <span class="text-xs bg-green-100 text-green-700 font-bold px-3 py-1 rounded-full">✓ Verified</span>
-                  <span class="text-xs bg-blue-100 text-blue-700 font-bold px-3 py-1 rounded-full">4.9 ★</span>
+                  <span class="text-xs bg-blue-100 text-blue-700 font-bold px-3 py-1 rounded-full"><span id="profileRatingBadge">—</span> ★</span>
                 </div>
               </div>
             </div>
@@ -1481,10 +1462,12 @@ let isProcessingAI = false;
 let obSkills = [];
 let appSkills =[];
 let selectedAvatar = "👷";
-let totalRevenue = 1250;
-let totalJobs = 4;
+let totalRevenue = 0;
+let totalJobs = 0;
 let currentJob = null;
 let jobIndex = 0;
+let currentRequestId = null;
+let requestsListener = null;
 
 const jobPool =[
   { title:"AC Repair", fare:"₹450–₹600", customer:"Rahul K.", distance:"1.2 km", eta:"~5 mins", urgency:"High — Water leaking inside", diag:"Leaking split AC detected. Your <b>AC Repair</b> tag gives 98% match.", payout:520 },
@@ -1548,110 +1531,127 @@ function togglePass(inputId, btn) {
   btn.innerHTML = isPass ? '<i data-lucide="eye-off" class="w-5 h-5"></i>' : '<i data-lucide="eye" class="w-5 h-5"></i>';
   lucide.createIcons();
 }
+
+// ── Friendly Firebase Auth error messages (exported globally)
+window.firebaseAuthError = function firebaseAuthError(err) {
+  const map = {
+    'auth/configuration-not-found': '⚙️ Firebase Authentication is not enabled yet. Go to Firebase Console → Authentication → Get Started → enable Email/Password.',
+    'auth/wrong-password':          'Incorrect password. Please try again.',
+    'auth/user-not-found':          'No account found with this email or phone.',
+    'auth/invalid-credential':      'Invalid email or password.',
+    'auth/email-already-in-use':    'This email is already registered. Please sign in instead.',
+    'auth/weak-password':           'Password must be at least 6 characters.',
+    'auth/invalid-email':           'Please enter a valid email address.',
+    'auth/too-many-requests':       'Too many failed attempts. Please wait a moment and try again.',
+    'auth/network-request-failed':  'Network error. Please check your connection.',
+  };
+  return map[err.code] || err.message || 'Authentication failed. Please try again.';
+}
+
 async function handleLogin() {
-  // Update label hint so users know to use email
-  document.getElementById('loginIdErr').textContent = 'Please enter a valid email address.';
-  const idOk = validateField('loginId', 'loginIdErr', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
+  const idOk = validateField('loginId', 'loginIdErr', v => v.length > 3);
   const passOk = validateField('loginPass', 'loginPassErr', v => v.length >= 6);
   if (!idOk || !passOk) return;
-
-  const email = document.getElementById('loginId').value.trim();
-  const pass  = document.getElementById('loginPass').value;
 
   const btn = document.querySelector('#loginForm .btn-primary');
   btn.disabled = true;
   btn.innerHTML = '<span class="flex items-center justify-center gap-2"><span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> Signing in...</span>';
 
+  const identifier = document.getElementById('loginId').value.trim();
+  const password = document.getElementById('loginPass').value;
+
   try {
-    const fbAuth = window._menderAuth;
-    if (!fbAuth) throw new Error('Firebase not ready yet. Please wait a moment and try again.');
-    const userCred = await window._menderFns.signInWithEmailAndPassword(fbAuth, email, pass);
-    const uid = userCred.user.uid;
+    // Determine if identifier is phone or email — normalize to email for Firebase Auth
+    let email = identifier;
+    if (/^\d{10}$/.test(identifier)) {
+      // Phone-based login: look up the email stored for this phone
+      const snap = await window.fbGet(window.fbRef(window.fbDB, 'phoneToEmail/' + identifier));
+      if (!snap.exists()) throw new Error('No account found for this phone number.');
+      email = snap.val();
+    }
 
-    // Try loading saved Firestore profile
-    let profileData = null;
-    try {
-      const fsdb = window._menderFsdb;
-      const snap = await window._menderFns.getDoc(window._menderFns.doc(fsdb, 'workers', uid));
-      if (snap.exists()) profileData = snap.data();
-    } catch(e) { console.warn('Firestore load skipped:', e); }
+    const cred = await window.fbSignInWithEmailAndPassword(window.fbAuth, email, password);
+    const uid = cred.user.uid;
 
-    currentUser = {
-      uid,
-      email: userCred.user.email,
-      name:      profileData?.name      || email.split('@')[0],
-      firstName: profileData?.firstName || email.split('@')[0],
-      lastName:  profileData?.lastName  || '',
-      city:      profileData?.city      || 'Bengaluru',
-      avatar:    profileData?.avatar    || '👷',
-      trade:     profileData?.trade     || 'Technician'
-    };
-    if (profileData?.skills) appSkills = profileData.skills;
+    // Load worker profile from DB
+    const workerSnap = await window.fbGet(window.fbRef(window.fbDB, 'workers/' + uid));
+    if (workerSnap.exists()) {
+      currentUser = { id: uid, ...workerSnap.val() };
+    } else {
+      currentUser = { id: uid, name: email, firstName: '', city: '', avatar: '👷', trade: '' };
+    }
     isNewUser = false;
     loadApp();
   } catch (err) {
+    console.error('Login error:', err);
+    showToast('⚠ ' + firebaseAuthError(err), 'red');
     btn.disabled = false;
     btn.innerHTML = 'Sign In →';
-    let msg = 'Sign-in failed. Check your email and password.';
-    if (err.code === 'auth/user-not-found')    msg = 'No account found with this email.';
-    else if (err.code === 'auth/wrong-password')     msg = 'Incorrect password. Try again.';
-    else if (err.code === 'auth/invalid-credential') msg = 'Invalid email or password.';
-    else if (err.code === 'auth/too-many-requests')  msg = 'Too many attempts. Try again later.';
-    else if (err.message) msg = err.message;
-    showToast('❌ ' + msg, 'red');
-    document.getElementById('loginId').classList.add('error');
   }
 }
 
 async function handleSignup() {
   const fnOk = validateField('suFirstName', 'suFirstNameErr', v => v.length > 0);
-  const lnOk = validateField('suLastName',  'suLastNameErr',  v => v.length > 0);
-  const phOk = validateField('suPhone',     'suPhoneErr',     v => /^\d{10}$/.test(v));
-  const emOk = validateField('suEmail',     'suEmailErr',     v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
-  const cyOk = validateField('suCity',      'suCityErr',      v => v.length > 0);
-  const psOk = validateField('suPass',      'suPassErr',      v => v.length >= 6);
-  const pcOk = validateField('suPassConfirm','suPassConfirmErr', v => v === document.getElementById('suPass').value);
+  const lnOk = validateField('suLastName', 'suLastNameErr', v => v.length > 0);
+  const phOk = validateField('suPhone', 'suPhoneErr', v => /^\d{10}$/.test(v));
+  const emOk = validateField('suEmail', 'suEmailErr', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
+  const cyOk = validateField('suCity', 'suCityErr', v => v.length > 0);
+  const psOk = validateField('suPass', 'suPassErr', v => v.length >= 6);
+  const pcOk = validateField('suPassConfirm', 'suPassConfirmErr', v => v === document.getElementById('suPass').value);
   const agreed = document.getElementById('agreeTerms').checked;
   document.getElementById('suTermsErr').classList.toggle('show', !agreed);
   if (!fnOk || !lnOk || !phOk || !emOk || !cyOk || !psOk || !pcOk || !agreed) return;
-
-  const email     = document.getElementById('suEmail').value.trim();
-  const pass      = document.getElementById('suPass').value;
-  const firstName = document.getElementById('suFirstName').value.trim();
-  const lastName  = document.getElementById('suLastName').value.trim();
-  const city      = document.getElementById('suCity').value;
 
   const btn = document.querySelector('#signupForm .btn-primary');
   btn.disabled = true;
   btn.innerHTML = '<span class="flex items-center justify-center gap-2"><span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> Creating account...</span>';
 
-  try {
-    const fbAuth = window._menderAuth;
-    if (!fbAuth) throw new Error('Firebase not ready yet. Please wait a moment and try again.');
-    const userCred = await window._menderFns.createUserWithEmailAndPassword(fbAuth, email, pass);
+  const phone = document.getElementById('suPhone').value.trim();
+  const email = document.getElementById('suEmail').value.trim();
+  const password = document.getElementById('suPass').value;
 
-    currentUser = {
-      uid:       userCred.user.uid,
-      email,
-      firstName,
-      lastName,
-      name:   firstName + ' ' + lastName,
-      city,
+  try {
+    // Check phone is not already taken (unauthenticated read — rules allow this)
+    const phoneSnap = await window.fbGet(window.fbRef(window.fbDB, 'phoneToEmail/' + phone));
+    if (phoneSnap.exists()) {
+      throw new Error('An account already exists with this phone number.');
+    }
+
+    // Create Firebase Auth user — now we are authenticated
+    const cred = await window.fbCreateUserWithEmailAndPassword(window.fbAuth, email, password);
+    const uid = cred.user.uid;
+
+    const workerData = {
+      id: uid,
+      firstName: document.getElementById('suFirstName').value.trim(),
+      lastName: document.getElementById('suLastName').value.trim(),
+      name: document.getElementById('suFirstName').value.trim() + ' ' + document.getElementById('suLastName').value.trim(),
+      phone: phone,
+      email: email,
+      city: document.getElementById('suCity').value,
       avatar: '👷',
-      trade:  ''
+      trade: '',
+      createdAt: Date.now()
     };
+
+    // Save worker profile (authenticated write to workers/<uid>)
+    await window.fbSet(window.fbRef(window.fbDB, 'workers/' + uid), workerData);
+
+    // Save phone→email index (authenticated write, best-effort)
+    try {
+      await window.fbSet(window.fbRef(window.fbDB, 'phoneToEmail/' + phone), email);
+    } catch (indexErr) {
+      console.warn('phoneToEmail index write failed (non-fatal):', indexErr);
+    }
+
+    currentUser = workerData;
     isNewUser = true;
     startOnboarding();
   } catch (err) {
+    console.error('Signup error:', err);
+    showToast('⚠ ' + firebaseAuthError(err), 'red');
     btn.disabled = false;
     btn.innerHTML = 'Create Account & Continue →';
-    let msg = 'Sign-up failed. Please try again.';
-    if (err.code === 'auth/email-already-in-use') msg = 'This email is already registered. Please log in.';
-    else if (err.code === 'auth/weak-password')    msg = 'Password too weak. Use at least 6 characters.';
-    else if (err.code === 'auth/invalid-email')    msg = 'Please enter a valid email address.';
-    else if (err.message) msg = err.message;
-    showToast('❌ ' + msg, 'red');
-    document.getElementById('suEmail').classList.add('error');
   }
 }
 
@@ -1850,6 +1850,21 @@ function buildSummary() {
 
   if (obSkills.length > 0) appSkills = [...new Set([...appSkills, ...obSkills])];
 
+  // 🔥 UPDATE FIREBASE WITH ONBOARDING DATA
+  if (currentUser && currentUser.id) {
+    window.fbUpdate(window.fbRef(window.fbDB, 'workers/' + currentUser.id), {
+      trade: trade,
+      experience: exp,
+      radius: radius,
+      availabilityDays: days,
+      startTime: st,
+      endTime: et,
+      skills: appSkills,
+      avatar: selectedAvatar,
+      onboardingComplete: true
+    });
+  }
+
   document.getElementById('summaryAvatar').textContent = selectedAvatar;
   document.getElementById('summaryName').textContent = currentUser.name;
   document.getElementById('summaryTrade').textContent = trade + (exp ? ' · ' + exp : '');
@@ -1866,26 +1881,7 @@ function formatTime(t) {
   return `${hr > 12 ? hr - 12 : hr || 12}:${m} ${hr >= 12 ? 'PM' : 'AM'}`;
 }
 
-async function goToApp() {
-  // Save completed onboarding profile to Firestore
-  if (currentUser?.uid && window._menderFsdb) {
-    try {
-      const { doc: fsDoc, setDoc: fsSetDoc } = window._menderFsStoreFns;
-      await fsSetDoc(fsDoc(window._menderFsdb, 'workers', currentUser.uid), {
-        name:      currentUser.name      || '',
-        firstName: currentUser.firstName || '',
-        lastName:  currentUser.lastName  || '',
-        trade:     currentUser.trade     || '',
-        city:      currentUser.city      || '',
-        avatar:    currentUser.avatar    || '👷',
-        email:     currentUser.email     || '',
-        skills:    appSkills,
-        createdAt: Date.now()
-      });
-    } catch (err) {
-      console.warn('Firestore profile save error:', err);
-    }
-  }
+function goToApp() {
   loadApp();
 }
 
@@ -1914,10 +1910,10 @@ function loadApp() {
   showScreen('appScreen');
 
   // Update all user-facing elements
-  const name = currentUser?.name || 'Ramesh Kumar';
+  const name = currentUser?.name || 'Worker';
   const avatar = currentUser?.avatar || '👷';
-  const city = currentUser?.city || 'Bengaluru';
-  const trade = currentUser?.trade || 'AC Technician';
+  const city = currentUser?.city || '';
+  const trade = currentUser?.trade || 'Technician';
 
   document.getElementById('sidebarName').textContent = name;
   document.getElementById('sidebarCity').textContent = city;
@@ -1931,26 +1927,53 @@ function loadApp() {
   document.getElementById('profileTradeInput').value = trade;
   document.getElementById('radarPin').textContent = avatar;
 
+  // 🔥 Load real stats from Firebase
+  if (currentUser && currentUser.id && window.fbDB) {
+    window.fbGet(window.fbRef(window.fbDB, 'workers/' + currentUser.id)).then(snap => {
+      if (snap.exists()) {
+        const data = snap.val();
+        totalRevenue = data.totalRevenue || 0;
+        totalJobs = data.completedJobs || 0;
+        const rating = data.rating || '—';
+        document.getElementById('statRevenue').textContent = '₹' + totalRevenue.toLocaleString('en-IN');
+        document.getElementById('statJobs').textContent = totalJobs;
+        document.getElementById('statRating').textContent = rating + ' ';
+        const pb = document.getElementById('profileRatingBadge');
+        if (pb) pb.textContent = rating;
+        // also sync into currentUser for use when going online
+        currentUser.completedJobs = totalJobs;
+        currentUser.rating = rating;
+        currentUser.totalRevenue = totalRevenue;
+      }
+    }).catch(() => {});
+  }
+
+  if (appSkills.length === 0 && currentUser?.skills) {
+    appSkills = Array.isArray(currentUser.skills) ? currentUser.skills : Object.values(currentUser.skills);
+  }
+
   renderAppSkills();
   renderProfileSkills();
+  loadReviews();
   lucide.createIcons();
 
   if (isNewUser) showToast('🎉 Welcome to Mender, ' + currentUser.firstName + '!', 'green');
 }
 
 function handleLogout() {
-  // Remove from RTDB if currently online
-  if (isOnline && currentUser?.uid && window._menderDb) {
-    const { ref: rtRef, remove: rtRemove } = window._menderRtdbFns;
-    rtRemove(rtRef(window._menderDb, 'online_workers/' + currentUser.uid)).catch(()=>{});
-  }
-  // Firebase sign out
-  if (window._menderAuth) {
-    window._menderFns.signOut(window._menderAuth).catch(()=>{});
+  // Sign out from Firebase Auth
+  if (window.fbSignOut && window.fbAuth) {
+    window.fbSignOut(window.fbAuth).catch(() => {});
   }
   currentUser = null; isNewUser = false; isOnline = false;
   isListening = false; isProcessingAI = false;
   appSkills = []; obSkills =[];
+  totalRevenue = 0; totalJobs = 0;
+  if (reviewsListener) { reviewsListener(); reviewsListener = null; }
+  // Reset stat cards
+  document.getElementById('statRevenue').textContent = '₹0';
+  document.getElementById('statJobs').textContent = '0';
+  document.getElementById('statRating').textContent = '—';
   showScreen('authScreen');
   
   // Reset login form
@@ -1978,7 +2001,7 @@ function handleLogout() {
 // ══════════════════════════════════════════════
 //  ONLINE TOGGLE
 // ══════════════════════════════════════════════
-function toggleOnline() {
+async function toggleOnline() {
   isOnline = !isOnline;
   const btn = document.getElementById('toggleOnlineBtn');
   const text = document.getElementById('toggleBtnText');
@@ -1994,24 +2017,67 @@ function toggleOnline() {
     document.getElementById('radarRings').classList.remove('hidden');
     document.getElementById('radarMsg').innerHTML = "<span class='text-blue-600 font-bold'>Scanning for nearby jobs...</span>";
     document.getElementById('radarBadge').className = 'flex items-center gap-2 px-3 py-1 bg-green-100 rounded-full text-xs font-bold text-green-700 border border-green-200';
-    showToast('🟢 You are now Online!', 'green');
+    
+    // 🔥 PUSH TO FIREBASE 'online_workers' NODE — re-fetch profile for freshest data
+    if (currentUser && currentUser.id) {
+      const getLocation = () => new Promise((resolve) => {
+        if (!navigator.geolocation) return resolve({ lat: null, lng: null });
+        navigator.geolocation.getCurrentPosition(
+          pos => resolve({ lat: pos.coords.latitude.toFixed(4), lng: pos.coords.longitude.toFixed(4) }),
+          () => resolve({ lat: null, lng: null }),
+          { timeout: 5000 }
+        );
+      });
 
-    // ── Write to Firebase Realtime Database ──
-    if (currentUser?.uid && window._menderDb) {
-      const { ref: rtRef, set: rtSet } = window._menderRtdbFns;
-      rtSet(rtRef(window._menderDb, 'online_workers/' + currentUser.uid), {
-        name:          currentUser.name  || 'Worker',
-        skill:         currentUser.trade || 'Technician',
-        photo:         '',
-        rating:        '4.8',
-        trust:         '95',
-        distance:      (Math.random() * 4 + 0.5).toFixed(1),
-        eta:           String(Math.floor(Math.random() * 12 + 3)),
-        completedJobs: String(totalJobs + 50),
-        aiReason:      'Highly experienced nearby technician for this issue.',
-        uid:           currentUser.uid
-      }).catch(err => console.error('RTDB set error:', err));
+      // Fetch location and fresh worker profile in parallel
+      const [loc, profileSnap] = await Promise.all([
+        getLocation(),
+        window.fbGet(window.fbRef(window.fbDB, 'workers/' + currentUser.id)).catch(() => null)
+      ]);
+      const profile = (profileSnap && profileSnap.exists()) ? profileSnap.val() : {};
+
+      // Merge fresh DB values into currentUser
+      currentUser.rating        = profile.rating        ?? currentUser.rating        ?? null;
+      currentUser.trust         = profile.trust         ?? currentUser.trust         ?? null;
+      currentUser.completedJobs = profile.completedJobs ?? currentUser.completedJobs ?? 0;
+      currentUser.totalRevenue  = profile.totalRevenue  ?? currentUser.totalRevenue  ?? 0;
+      currentUser.trade         = profile.trade         ?? currentUser.trade         ?? 'Technician';
+      currentUser.name          = profile.name          ?? currentUser.name;
+
+      // Keep stat cards in sync
+      totalJobs    = currentUser.completedJobs;
+      totalRevenue = currentUser.totalRevenue;
+      document.getElementById('statJobs').textContent    = totalJobs;
+      document.getElementById('statRevenue').textContent = '₹' + totalRevenue.toLocaleString('en-IN');
+      if (currentUser.rating) {
+        document.getElementById('statRating').textContent = currentUser.rating + ' ';
+        const pb = document.getElementById('profileRatingBadge');
+        if (pb) pb.textContent = currentUser.rating;
+      }
+
+      const skills = Array.isArray(profile.skills) ? profile.skills
+                   : profile.skills ? Object.values(profile.skills)
+                   : appSkills;
+
+      window.fbSet(window.fbRef(window.fbDB, 'online_workers/' + currentUser.id), {
+        name:          currentUser.name,
+        skill:         currentUser.trade,
+        rating:        currentUser.rating  != null ? String(currentUser.rating)  : 'N/A',
+        trust:         currentUser.trust   != null ? String(currentUser.trust)   : 'N/A',
+        lat:           loc.lat,
+        lng:           loc.lng,
+        distance:      loc.lat ? 'Nearby' : '~2-5',
+        eta:           loc.lat ? '~10'    : '~15',
+        photo:         'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name) + '&background=random',
+        aiReason:      skills.length > 0 ? 'Matches ' + skills[0] + ' requirement' : 'Experienced local technician',
+        completedJobs: currentUser.completedJobs
+      });
     }
+    
+    showToast('🟢 You are now Online!', 'green');
+    startRequestsListener();
+    const lrs = document.getElementById('liveRequestStatus');
+    if (lrs) lrs.innerHTML = '<div class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div> <span class="text-green-700">Listening for customer requests in real-time...</span>';
   } else {
     btn.className = 'flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md hover:shadow-lg hover:-translate-y-0.5';
     text.textContent = 'GO ONLINE';
@@ -2021,14 +2087,16 @@ function toggleOnline() {
     document.getElementById('radarRings').classList.add('hidden');
     document.getElementById('radarMsg').textContent = 'Go online to receive jobs nearby.';
     document.getElementById('radarBadge').className = 'flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-full text-xs font-bold text-slate-500';
-    showToast('🔴 You are now Offline.', 'slate');
-
-    // ── Remove from Firebase Realtime Database ──
-    if (currentUser?.uid && window._menderDb) {
-      const { ref: rtRef, remove: rtRemove } = window._menderRtdbFns;
-      rtRemove(rtRef(window._menderDb, 'online_workers/' + currentUser.uid))
-        .catch(err => console.error('RTDB remove error:', err));
+    
+    // 🔥 REMOVE FROM FIREBASE 'online_workers' NODE
+    if (currentUser && currentUser.id) {
+      window.fbRemove(window.fbRef(window.fbDB, 'online_workers/' + currentUser.id));
     }
+    
+    showToast('🔴 You are now Offline.', 'slate');
+    stopRequestsListener();
+    const lrs = document.getElementById('liveRequestStatus');
+    if (lrs) lrs.innerHTML = '<div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div> Go online to receive real job requests from customers';
   }
 }
 
@@ -2137,15 +2205,29 @@ async function dashProcessWithGemini(text) {
 
 
 async function callGeminiSkillExtract(text) {
-  // We will change localhost to your live URL later
+  // Send Firebase ID token so the backend can verify the caller
+  let idToken = '';
+  try {
+    if (window.fbAuth && window.fbAuth.currentUser) {
+      idToken = await window.fbAuth.currentUser.getIdToken();
+    }
+  } catch (_) {}
+
   const res = await fetch(`https://mender-9rvq.onrender.com/api/extract-skills`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(idToken ? { 'Authorization': 'Bearer ' + idToken } : {})
+    },
     body: JSON.stringify({ text })
   });
-  
+
   if (!res.ok) throw new Error("Failed to extract skills");
-  return await res.json();
+  const data = await res.json();
+
+  // Ensure response is an array of strings
+  if (!Array.isArray(data)) throw new Error('Unexpected response format from skill extraction API.');
+  return data.filter(s => typeof s === 'string' && s.trim().length > 0);
 }
 
 // ══════════════════════════════════════════════
@@ -2175,10 +2257,92 @@ function renderProfileSkills() {
   });
 }
 
-function removeAppSkill(i) {
-  appSkills.splice(i, 1);
-  renderAppSkills();
-  renderProfileSkills();
+// ══════════════════════════════════════════════
+//  REVIEWS — load & render from Firebase
+// ══════════════════════════════════════════════
+let reviewsListener = null;
+
+function loadReviews() {
+  if (!currentUser || !currentUser.id || !window.fbDB) return;
+  if (reviewsListener) { reviewsListener(); reviewsListener = null; }
+
+  const revRef = window.fbRef(window.fbDB, 'reviews/' + currentUser.id);
+  reviewsListener = window.fbOnValue(revRef, (snapshot) => {
+    const data = snapshot.val();
+    renderReviews(data);
+  });
+}
+
+function renderReviews(data) {
+  const list = document.getElementById('reviewsList');
+  const avgEl = document.getElementById('reviewAvgScore');
+  const starsEl = document.getElementById('reviewAvgStars');
+  const countEl = document.getElementById('reviewTotalCount');
+  if (!list) return;
+
+  if (!data) {
+    list.innerHTML = '<div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 text-center text-slate-400 text-sm">No reviews yet. Reviews left by customers will appear here.</div>';
+    avgEl.textContent = '—';
+    starsEl.textContent = '☆☆☆☆☆';
+    countEl.textContent = '0 reviews';
+    [1,2,3,4,5].forEach(n => {
+      document.getElementById('bar'+n).style.width = '0%';
+      document.getElementById('pct'+n).textContent = '0%';
+    });
+    return;
+  }
+
+  const reviews = Object.values(data).sort((a,b) => b.timestamp - a.timestamp);
+  const total = reviews.length;
+  const sum = reviews.reduce((s, r) => s + r.stars, 0);
+  const avg = total ? (sum / total).toFixed(1) : '—';
+
+  // Update summary
+  avgEl.textContent = avg;
+  const fullStars = Math.round(parseFloat(avg));
+  starsEl.textContent = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
+  countEl.textContent = total + ' review' + (total !== 1 ? 's' : '');
+
+  // Update bar chart
+  [1,2,3,4,5].forEach(n => {
+    const cnt = reviews.filter(r => r.stars === n).length;
+    const pct = total ? Math.round(cnt / total * 100) : 0;
+    document.getElementById('bar'+n).style.width = pct + '%';
+    document.getElementById('pct'+n).textContent = pct + '%';
+  });
+
+  // Persist computed rating back to workers/<uid>
+  if (currentUser && currentUser.id && window.fbDB && avg !== '—') {
+    const newRating = parseFloat(avg);
+    currentUser.rating = newRating;
+    window.fbUpdate(window.fbRef(window.fbDB, 'workers/' + currentUser.id), { rating: newRating });
+    document.getElementById('statRating').textContent = avg + ' ';
+    const pb = document.getElementById('profileRatingBadge');
+    if (pb) pb.textContent = avg;
+  }
+
+  // Render individual cards
+  list.innerHTML = reviews.map(r => {
+    const stars = '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars);
+    const name = r.customerName || r.customerEmail || 'Customer';
+    const date = new Date(r.timestamp).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    return `<div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+      <div class="flex justify-between items-start mb-3">
+        <div>
+          <p class="font-bold text-slate-800">${escapeHtml(name)}</p>
+          <p class="text-yellow-400 text-sm">${stars}</p>
+        </div>
+        <span class="text-xs text-slate-400">${date}</span>
+      </div>
+      ${r.comment ? `<p class="text-slate-600 text-sm">${escapeHtml(r.comment)}</p>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = String(str ?? '');
+  return d.innerHTML;
 }
 
 function addProfileSkill() {
@@ -2189,28 +2353,61 @@ function addProfileSkill() {
 }
 
 // ══════════════════════════════════════════════
-//  JOB SIMULATION
+//  REAL-TIME REQUESTS LISTENER
 // ══════════════════════════════════════════════
-function simulateJob() {
-  if (!isOnline) {
-    document.getElementById('toggleOnlineBtn').classList.add('ring-4','ring-red-500','scale-110');
-    setTimeout(() => document.getElementById('toggleOnlineBtn').classList.remove('ring-4','ring-red-500','scale-110'), 500);
-    showToast('⚠️ Go ONLINE first to receive jobs!', 'red');
-    return;
-  }
-  currentJob = jobPool[jobIndex % jobPool.length];
-  jobIndex++;
+function startRequestsListener() {
+  if (!window.fbDB || !window.fbRef || !window.fbOnValue || !currentUser) return;
+  // Detach any previous listener
+  if (requestsListener) { requestsListener(); requestsListener = null; }
+
+  const reqRef = window.fbRef(window.fbDB, 'requests');
+  requestsListener = window.fbOnValue(reqRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) return;
+    Object.entries(data).forEach(([key, req]) => {
+      if (req.workerId === currentUser.id && req.status === 'pending') {
+        // Only show if modal is not already open
+        if (!document.getElementById('jobModal').classList.contains('open')) {
+          showRealRequest(key, req);
+        }
+      }
+    });
+  });
+}
+
+function stopRequestsListener() {
+  if (requestsListener) { requestsListener(); requestsListener = null; }
+}
+
+function showRealRequest(reqId, req) {
+  currentRequestId = reqId;
+  currentJob = {
+    title: req.issue || 'Service Request',
+    fare: '₹200–₹600',
+    customer: req.customerEmail || 'Customer',
+    distance: 'Nearby',
+    eta: '~10 mins',
+    urgency: req.issue ? 'Based on customer description' : 'Awaiting details',
+    diag: req.issue ? `Customer says: <b>${req.issue}</b>` : 'No description provided.',
+    payout: 0
+  };
   document.getElementById('modalJobTitle').textContent = currentJob.title;
   document.getElementById('modalFare').textContent = currentJob.fare;
   document.getElementById('modalCustomer').textContent = currentJob.customer;
-  document.getElementById('modalDistance').textContent = currentJob.distance + ' away';
+  document.getElementById('modalDistance').textContent = currentJob.distance;
   document.getElementById('modalETA').textContent = currentJob.eta;
   document.getElementById('modalUrgency').textContent = currentJob.urgency;
   document.getElementById('modalAIDiag').innerHTML = currentJob.diag;
   document.getElementById('jobModal').classList.add('open');
+  showToast('📲 New job request from customer!', 'blue');
 }
 
 function declineJob() {
+  // Mark request as declined in Firebase
+  if (currentRequestId && window.fbDB) {
+    window.fbUpdate(window.fbRef(window.fbDB, 'requests/' + currentRequestId), { status: 'declined' });
+  }
+  currentRequestId = null;
   document.getElementById('jobModal').classList.remove('open');
   showToast('Job declined. Waiting for next request...', 'slate');
 }
@@ -2219,16 +2416,24 @@ function acceptJob() {
   const btn = document.getElementById('acceptBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="flex items-center justify-center gap-2"><span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> Accepting...</span>';
+
+  // Mark request as accepted in Firebase
+  if (currentRequestId && window.fbDB) {
+    window.fbUpdate(window.fbRef(window.fbDB, 'requests/' + currentRequestId), { status: 'accepted' });
+  }
+
   setTimeout(() => {
     document.getElementById('jobModal').classList.remove('open');
     btn.disabled = false;
     btn.innerHTML = '✓ Accept & Navigate';
     if (currentJob) {
-      totalRevenue += currentJob.payout;
       totalJobs++;
-      document.getElementById('statRevenue').textContent = '₹' + totalRevenue.toLocaleString('en-IN');
       document.getElementById('statJobs').textContent = totalJobs;
-      document.getElementById('weekRevenue').textContent = '₹' + (4850 + currentJob.payout).toLocaleString('en-IN');
+      // 🔥 Persist updated completedJobs to Firebase
+      if (currentUser && currentUser.id && window.fbDB) {
+        currentUser.completedJobs = totalJobs;
+        window.fbUpdate(window.fbRef(window.fbDB, 'workers/' + currentUser.id), { completedJobs: totalJobs });
+      }
       const badge = document.getElementById('jobsBadge');
       badge.classList.remove('hidden');
       badge.textContent = (parseInt(badge.textContent || '0') + 1);
@@ -2241,12 +2446,18 @@ function acceptJob() {
         <td class="py-4 px-6 text-slate-500">${currentJob.customer}</td>
         <td class="py-4 px-6 text-slate-500">${timeStr}</td>
         <td class="py-4 px-6"><span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">In Progress</span></td>
-        <td class="py-4 px-6 text-right font-bold">₹${currentJob.payout}</td>
+        <td class="py-4 px-6 text-right font-bold">Pending</td>
       </tr>`;
       document.getElementById('allJobsTable').insertAdjacentHTML('afterbegin', row);
       document.getElementById('jobHistoryTable').insertAdjacentHTML('afterbegin', row.replace(`<td class="py-4 px-6 text-slate-500">${currentJob.customer}</td>`,''));
+      // Hide empty-state placeholders once a real job exists
+      const emptyAll = document.getElementById('allJobsEmpty');
+      const emptyHist = document.getElementById('jobHistoryEmpty');
+      if (emptyAll) emptyAll.style.display = 'none';
+      if (emptyHist) emptyHist.style.display = 'none';
       updateJobCount();
     }
+    currentRequestId = null;
     showToast('🚀 Job Accepted! Navigate to customer.', 'green');
     lucide.createIcons();
   }, 1200);
@@ -2279,19 +2490,26 @@ function updateJobCount() {
 //  PROFILE & SETTINGS
 // ══════════════════════════════════════════════
 function saveProfile() {
-  const name  = document.getElementById('profileNameInput').value.trim();
-  const city  = document.getElementById('profileCity').value.trim();
+  const name = document.getElementById('profileNameInput').value.trim();
+  const city = document.getElementById('profileCity').value.trim();
   const trade = document.getElementById('profileTradeInput').value.trim();
-  if (currentUser) {
-    currentUser.name = name; currentUser.city = city; currentUser.trade = trade;
-    // Persist to Firestore
-    if (currentUser.uid && window._menderFsdb) {
-      const { doc: fsDoc, setDoc: fsSetDoc } = window._menderFsStoreFns;
-      fsSetDoc(fsDoc(window._menderFsdb, 'workers', currentUser.uid),
-        { name, city, trade, skills: appSkills }, { merge: true })
-        .catch(err => console.warn('Firestore update error:', err));
+  
+  if (currentUser) { 
+    currentUser.name = name; 
+    currentUser.city = city; 
+    currentUser.trade = trade; 
+    
+    // 🔥 UPDATE FIREBASE DB
+    if(currentUser.id) {
+      window.fbUpdate(window.fbRef(window.fbDB, 'workers/' + currentUser.id), {
+        name: name,
+        city: city,
+        trade: trade,
+        skills: appSkills
+      });
     }
   }
+  
   document.getElementById('sidebarName').textContent = name;
   document.getElementById('sidebarCity').textContent = city;
   document.getElementById('profileName').textContent = name;
@@ -2327,7 +2545,6 @@ window.goToApp = goToApp;
 window.handleLogout = handleLogout;
 window.showView = showView;
 window.toggleOnline = toggleOnline;
-window.simulateJob = simulateJob;
 window.acceptJob = acceptJob;
 window.declineJob = declineJob;
 window.filterJobs = filterJobs;
@@ -2430,23 +2647,23 @@ window.startMic = startMic;
 
         <div class="auth-input-wrap">
           <label class="auth-label">Email Address</label>
-          <input id="custLoginEmail" type="email" class="auth-input" placeholder="you@example.com" />
+          <input type="email" class="auth-input" placeholder="you@example.com" />
         </div>
 
         <div class="auth-input-wrap">
           <label class="auth-label">Password</label>
-          <input id="custLoginPass" type="password" class="auth-input" placeholder="Enter your password" />
+          <input type="password" class="auth-input" placeholder="Enter your password" />
         </div>
 
         <div style="display:flex;justify-content:flex-end;margin:-4px 0 12px;">
           <a href="#" style="font-size:0.82rem;color:#3b82f6;font-weight:500;text-decoration:none;">Forgot password?</a>
         </div>
 
-        <button class="auth-submit-btn" onclick="customerSignIn()">Sign In</button>
+        <button class="auth-submit-btn" onclick="custHandleLogin()">Sign In</button>
 
         <div class="auth-divider"><span>or continue with</span></div>
 
-        <button class="social-btn" onclick="customerGoogleSignIn()">
+        <button class="social-btn">
           <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.6 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 2.9l5.7-5.7C34.4 6.5 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 18.9 12 24 12c3.1 0 5.8 1.1 8 2.9l5.7-5.7C34.4 6.5 29.5 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.4 26.7 36 24 36c-5.3 0-9.6-3.3-11.3-7.9l-6.5 5C9.6 39.5 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.3 5.6l6.2 5.2C41.4 35.5 44 30.2 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
           Continue with Google
         </button>
@@ -2459,30 +2676,30 @@ window.startMic = startMic;
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div class="auth-input-wrap" style="margin-bottom:0">
             <label class="auth-label">First Name</label>
-            <input id="custSignupFName" type="text" class="auth-input" placeholder="Rahul" />
+            <input type="text" class="auth-input" placeholder="Rahul" />
           </div>
           <div class="auth-input-wrap" style="margin-bottom:0">
             <label class="auth-label">Last Name</label>
-            <input id="custSignupLName" type="text" class="auth-input" placeholder="Sharma" />
+            <input type="text" class="auth-input" placeholder="Sharma" />
           </div>
         </div>
 
         <div class="auth-input-wrap" style="margin-top:1rem;">
           <label class="auth-label">Email Address</label>
-          <input id="custSignupEmail" type="email" class="auth-input" placeholder="you@example.com" />
+          <input type="email" class="auth-input" placeholder="you@example.com" />
         </div>
 
         <div class="auth-input-wrap">
           <label class="auth-label">Phone Number</label>
-          <input id="custSignupPhone" type="tel" class="auth-input" placeholder="+91 98765 43210" />
+          <input type="tel" class="auth-input" placeholder="+91 98765 43210" />
         </div>
 
         <div class="auth-input-wrap">
           <label class="auth-label">Password</label>
-          <input id="custSignupPass" type="password" class="auth-input" placeholder="Create a strong password" />
+          <input type="password" class="auth-input" placeholder="Create a strong password" />
         </div>
 
-        <button class="auth-submit-btn" onclick="customerSignUp()">Create Account</button>
+        <button class="auth-submit-btn" onclick="custHandleSignup()">Create Account</button>
 
         <p style="font-size:0.78rem;color:#9ca3af;text-align:center;margin-top:12px;">
           By signing up, you agree to our <a href="#" style="color:#3b82f6;text-decoration:none;">Terms</a> and <a href="#" style="color:#3b82f6;text-decoration:none;">Privacy Policy</a>.
@@ -2650,12 +2867,42 @@ window.startMic = startMic;
 </div>
 <!-- ══════════════════════════ END MAIN APP ══════════════════════════ -->
 
+<!-- ══════════════════════════ REVIEW MODAL ══════════════════════════ -->
+<div id="reviewModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,0.75);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:28px;padding:40px;width:100%;max-width:440px;margin:16px;box-shadow:0 24px 80px rgba(0,0,0,0.25);">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-size:2.8rem;">⭐</div>
+      <h3 style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#0f172a;margin:8px 0 4px;">Rate Your Worker</h3>
+      <p style="color:#64748b;font-size:0.9rem;" id="reviewModalWorkerName">How was your experience?</p>
+    </div>
+
+    <!-- Star picker -->
+    <div style="display:flex;justify-content:center;gap:10px;margin-bottom:24px;" id="starPicker">
+      <span data-star="1" onclick="setReviewStar(1)" style="font-size:2.4rem;cursor:pointer;color:#cbd5e1;transition:color 0.15s;">★</span>
+      <span data-star="2" onclick="setReviewStar(2)" style="font-size:2.4rem;cursor:pointer;color:#cbd5e1;transition:color 0.15s;">★</span>
+      <span data-star="3" onclick="setReviewStar(3)" style="font-size:2.4rem;cursor:pointer;color:#cbd5e1;transition:color 0.15s;">★</span>
+      <span data-star="4" onclick="setReviewStar(4)" style="font-size:2.4rem;cursor:pointer;color:#cbd5e1;transition:color 0.15s;">★</span>
+      <span data-star="5" onclick="setReviewStar(5)" style="font-size:2.4rem;cursor:pointer;color:#cbd5e1;transition:color 0.15s;">★</span>
+    </div>
+    <p style="text-align:center;font-size:0.85rem;color:#94a3b8;margin-bottom:20px;" id="starLabel">Tap a star to rate</p>
+
+    <!-- Comment -->
+    <textarea id="reviewComment" rows="3" placeholder="Share details about your experience (optional)..."
+      style="width:100%;padding:14px 16px;border:1.5px solid #e2e8f0;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:14px;color:#1e293b;background:#f8fafc;resize:none;outline:none;box-sizing:border-box;"></textarea>
+
+    <div style="display:flex;gap:12px;margin-top:20px;">
+      <button onclick="closeReviewModal()" style="flex:1;padding:13px;border:1.5px solid #e2e8f0;border-radius:12px;font-weight:700;color:#64748b;background:#fff;cursor:pointer;font-size:14px;">Skip</button>
+      <button onclick="submitReview()" id="reviewSubmitBtn" style="flex:2;padding:13px;background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;">Submit Review</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- Script for Customer portal -->
 <script>
 (function() {
 
-/* ── TAB SWITCH ── */
+/* ── AUTH FLOW ── */
 window.switchTabCustomer = function(tab) {
   document.getElementById('custLoginForm').classList.toggle('active', tab === 'login');
   document.getElementById('custSignupForm').classList.toggle('active', tab === 'signup');
@@ -2664,132 +2911,82 @@ window.switchTabCustomer = function(tab) {
   document.getElementById('custAuthHeading').textContent = tab === 'login' ? 'Welcome back 👋' : 'Join Mender 🚀';
 }
 
-/* ── HELPERS ── */
-function custShowError(el, msg) {
-  el.style.border = '1.5px solid #ef4444';
-  el.title = msg;
-}
-function custClearErrors() {
-  document.querySelectorAll('#custLoginForm .auth-input, #custSignupForm .auth-input').forEach(el => {
-    el.style.border = '';
-    el.title = '';
-  });
-}
-
 function enterApp() {
   document.getElementById('authPage').style.display = 'none';
   document.getElementById('mainApp').style.display = 'block';
   history.pushState({ page: 'app' }, '', '');
+  // Start listening for accepted requests so review modal can fire
+  const user = window.fbAuth && window.fbAuth.currentUser;
 }
 
 function signOut() {
-  if (window._menderAuth) {
-    window._menderFns.signOut(window._menderAuth).catch(()=>{});
+  if (custRequestsListener) { custRequestsListener(); custRequestsListener = null; }
+  if (window.fbSignOut && window.fbAuth) {
+    window.fbSignOut(window.fbAuth).catch(() => {});
   }
   document.getElementById('mainApp').style.display = 'none';
   document.getElementById('authPage').style.display = 'flex';
 }
 
-/* ── CUSTOMER SIGN-IN ── */
-window.customerSignIn = async function() {
-  custClearErrors();
-  const emailEl = document.getElementById('custLoginEmail');
-  const passEl  = document.getElementById('custLoginPass');
-  const email = emailEl.value.trim();
-  const pass  = passEl.value;
+// ── Customer Login
+window.custHandleLogin = async function() {
+  const emailEl = document.querySelector('#custLoginForm input[type="email"]');
+  const passEl  = document.querySelector('#custLoginForm input[type="password"]');
+  const btn     = document.querySelector('#custLoginForm .auth-submit-btn');
+  const email   = emailEl.value.trim();
+  const pass    = passEl.value;
 
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    custShowError(emailEl, 'Enter a valid email'); emailEl.focus(); return;
-  }
-  if (pass.length < 6) {
-    custShowError(passEl, 'Password must be at least 6 characters'); passEl.focus(); return;
-  }
+  if (!email || !pass) { alert('Please enter your email and password.'); return; }
 
-  const btn = document.querySelector('#custLoginForm .auth-submit-btn');
-  btn.disabled = true; btn.textContent = 'Signing in...';
-
+  btn.disabled = true;
+  btn.textContent = 'Signing in...';
   try {
-    const fbAuth = window._menderAuth;
-    if (!fbAuth) throw new Error('Firebase not ready. Please wait a moment.');
-    await window._menderFns.signInWithEmailAndPassword(fbAuth, email, pass);
+    await window.fbSignInWithEmailAndPassword(window.fbAuth, email, pass);
     enterApp();
   } catch (err) {
-    btn.disabled = false; btn.textContent = 'Sign In';
-    let msg = 'Sign-in failed. Check your credentials.';
-    if (err.code === 'auth/user-not-found')    msg = 'No account found with this email.';
-    else if (err.code === 'auth/wrong-password')     msg = 'Incorrect password.';
-    else if (err.code === 'auth/invalid-credential') msg = 'Invalid email or password.';
-    else if (err.message) msg = err.message;
-    alert(msg);
-    custShowError(emailEl, msg);
+    alert(firebaseAuthError(err));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
   }
 };
 
-/* ── CUSTOMER SIGN-UP ── */
-window.customerSignUp = async function() {
-  custClearErrors();
-  const fNameEl = document.getElementById('custSignupFName');
-  const lNameEl = document.getElementById('custSignupLName');
-  const emailEl = document.getElementById('custSignupEmail');
-  const passEl  = document.getElementById('custSignupPass');
-  const email = emailEl.value.trim();
-  const pass  = passEl.value;
+// ── Customer Signup
+window.custHandleSignup = async function() {
+  const firstEl = document.querySelector('#custSignupForm input[type="text"]');
+  const emailEl = document.querySelector('#custSignupForm input[type="email"]');
+  const passEl  = document.querySelector('#custSignupForm input[type="password"]');
+  const btn     = document.querySelector('#custSignupForm .auth-submit-btn');
+  const email   = emailEl.value.trim();
+  const pass    = passEl.value;
 
-  if (!fNameEl.value.trim()) { custShowError(fNameEl, 'Required'); fNameEl.focus(); return; }
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    custShowError(emailEl, 'Enter a valid email'); emailEl.focus(); return;
-  }
-  if (pass.length < 6) {
-    custShowError(passEl, 'Min 6 characters'); passEl.focus(); return;
-  }
+  if (!firstEl.value.trim()) { alert('Please enter your name.'); return; }
+  if (!email) { alert('Please enter your email.'); return; }
+  if (pass.length < 6) { alert('Password must be at least 6 characters.'); return; }
 
-  const btn = document.querySelector('#custSignupForm .auth-submit-btn');
-  btn.disabled = true; btn.textContent = 'Creating account...';
-
+  btn.disabled = true;
+  btn.textContent = 'Creating account...';
   try {
-    const fbAuth = window._menderAuth;
-    if (!fbAuth) throw new Error('Firebase not ready. Please wait a moment.');
-    await window._menderFns.createUserWithEmailAndPassword(fbAuth, email, pass);
-    // Save basic customer doc to Firestore
-    if (window._menderFsdb) {
-      const uid = fbAuth.currentUser.uid;
-      const { doc: fsDoc, setDoc: fsSetDoc } = window._menderFsStoreFns;
-      await fsSetDoc(fsDoc(window._menderFsdb, 'customers', uid), {
-        firstName: fNameEl.value.trim(),
-        lastName:  lNameEl.value.trim(),
-        email,
-        createdAt: Date.now()
-      }).catch(()=>{});
-    }
+    const cred = await window.fbCreateUserWithEmailAndPassword(window.fbAuth, email, pass);
+    // Save basic customer profile
+    await window.fbSet(window.fbRef(window.fbDB, 'customers/' + cred.user.uid), {
+      name: firstEl.value.trim(),
+      email: email,
+      createdAt: Date.now()
+    });
     enterApp();
   } catch (err) {
-    btn.disabled = false; btn.textContent = 'Create Account';
-    let msg = 'Sign-up failed.';
-    if (err.code === 'auth/email-already-in-use') msg = 'Email already registered. Please sign in.';
-    else if (err.code === 'auth/weak-password')    msg = 'Password too weak.';
-    else if (err.message) msg = err.message;
-    alert(msg);
-    custShowError(emailEl, msg);
+    alert(firebaseAuthError(err));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Create Account';
   }
 };
 
-/* ── GOOGLE SIGN-IN ── */
-window.customerGoogleSignIn = async function() {
-  try {
-    if (!window._menderAuth) throw new Error('Firebase not ready. Please wait a moment.');
-    await window._menderFns.signInWithPopup(window._menderAuth, new window._menderFns.GoogleAuthProvider());
-    enterApp();
-  } catch (err) {
-    if (err.code !== 'auth/popup-closed-by-user') {
-      alert('Google sign-in failed: ' + (err.message || err.code));
-    }
-  }
-};
-
-// Browser back button → return to auth page
+// Browser back button & backspace key → return to auth page
 window.addEventListener('popstate', function() {
   const mainApp = document.getElementById('mainApp');
-  if (mainApp && mainApp.style.display === 'block') {
+  if (mainApp.style.display === 'block') {
     mainApp.style.display = 'none';
     document.getElementById('authPage').style.display = 'flex';
   }
@@ -2800,7 +2997,7 @@ document.addEventListener('keydown', function(e) {
     const mainApp = document.getElementById('mainApp');
     const tag = document.activeElement.tagName.toLowerCase();
     const isTyping = tag === 'input' || tag === 'textarea' || document.activeElement.isContentEditable;
-    if (!isTyping && mainApp && mainApp.style.display === 'block') {
+    if (!isTyping && mainApp.style.display === 'block') {
       mainApp.style.display = 'none';
       document.getElementById('authPage').style.display = 'flex';
     }
@@ -2815,7 +3012,16 @@ function previewImage(event) {
 }
 
 /* ── AI ANALYSIS ── */
+
+
 async function analyzeIssue() {
+  // Require authentication before calling the backend
+  const user = window.fbAuth && window.fbAuth.currentUser;
+  if (!user) {
+    alert('Please sign in to use AI analysis.');
+    return;
+  }
+
   const fileInput = document.getElementById('fileInput');
   const issueText = document.getElementById('issueText').value.trim();
 
@@ -2830,6 +3036,9 @@ async function analyzeIssue() {
   document.getElementById('resultCards').classList.add('hidden');
 
   try {
+    // Get Firebase ID token to authenticate backend request
+    const idToken = await user.getIdToken();
+
     const formData = new FormData();
     formData.append('issueText', issueText);
     if (fileInput.files.length > 0) {
@@ -2838,27 +3047,32 @@ async function analyzeIssue() {
 
     const response = await fetch('https://mender-9rvq.onrender.com/api/analyze-issue', {
       method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + idToken },
       body: formData
     });
 
     if (!response.ok) throw new Error("Backend AI error");
     const result = await response.json();
 
+    // Validate response shape before using it
+    if (!result || typeof result !== 'object') throw new Error('Invalid response from server.');
+
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('resultCards').classList.remove('hidden');
     document.getElementById('workersSection').classList.remove('hidden');
 
-    document.getElementById('category').innerText = result.category;
-    document.getElementById('urgency').innerText   = result.urgency;
-    document.getElementById('summary').innerText   = result.summary;
+    document.getElementById('category').innerText = result.category || '—';
+    document.getElementById('urgency').innerText = result.urgency || '—';
+    document.getElementById('summary').innerText = result.summary || '—';
+
+    currentAnalysis = result;
   } catch (error) {
     console.error("Analysis error:", error);
     alert("AI Analysis failed. Make sure backend is running.");
     document.getElementById('loadingState').classList.add('hidden');
   }
 }
-
-// Expose to window
+// Expose Mender globals to window
 window.enterApp = enterApp;
 window.signOut = signOut;
 window.previewImage = previewImage;
@@ -2880,152 +3094,88 @@ function enterPortal(type) {
     document.getElementById('workerPortal').style.display = 'block';
   } else {
     document.getElementById('customerPortal').style.display = 'block';
+    // Apply body classes needed by customer portal dark mode
     document.body.classList.add('bg-gradient-to-br','from-slate-50','via-white','to-blue-50');
   }
 }
 
+// Override framework logout to return to portal
+window._origFixitShowScreen = null;
+
 document.addEventListener('DOMContentLoaded', function() {
-  // Patch Worker Portal's handleLogout — call original first (for Firebase signout + RTDB cleanup), then navigate
+  // Patch Worker Portal's handleLogout
   const origHandleLogout = window.handleLogout;
   window.handleLogout = function() {
-    if (origHandleLogout) origHandleLogout();   // ← runs Firebase signOut + RTDB remove
+    // hide worker portal, show selector
     document.getElementById('workerPortal').style.display = 'none';
     document.getElementById('portalSelector').classList.remove('hidden');
   };
 
-  // Patch Customer Portal's signOut — call original (for Firebase signOut), then navigate
+  // Patch Customer Portal's signOut
   const origSignOut = window.signOut;
   window.signOut = function() {
-    if (origSignOut) origSignOut();             // ← runs Firebase signOut
+    // Sign out from Firebase Auth
+    if (window.fbSignOut && window.fbAuth) {
+      window.fbSignOut(window.fbAuth).catch(() => {});
+    }
+    // call original to reset its internal state
+    if (origSignOut) origSignOut();
+    // then return to portal selector
     document.getElementById('customerPortal').style.display = 'none';
     document.getElementById('portalSelector').classList.remove('hidden');
   };
 });
 </script>
 
-<!-- ══════════════════════════════════════════
-     FIREBASE MODULE — single source of truth
-══════════════════════════════════════════ -->
+<!-- Firebase Client (Using Module approach cleanly) -->
 <script type="module">
-// ── All imports from the SAME version (10.12.2) ──
-import { initializeApp }                                 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, push, set, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-import { getAuth, createUserWithEmailAndPassword,
-         signInWithEmailAndPassword, signInWithPopup,
-         GoogleAuthProvider, signOut }                  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc }            from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, push, set, update, remove, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey:            "AIzaSyAtsEz8mC__F5QZ9D5RQBX4B68xmnjdO3Q",
-  authDomain:        "mender-64918.firebaseapp.com",
-  databaseURL:       "https://mender-64918-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:         "mender-64918",
-  storageBucket:     "mender-64918.firebasestorage.app",
-  messagingSenderId: "988862228969",
-  appId:             "1:988862228969:web:16d9950051d51f6f52c378"
+  apiKey: "AIzaSyC7S-yxGPn7OczoDzoht8bpSOX8Au2Pe_g",
+  authDomain: "kaushal-9bce6.firebaseapp.com",
+  databaseURL: "https://kaushal-9bce6-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "kaushal-9bce6",
+  storageBucket: "kaushal-9bce6.firebasestorage.app",
+  messagingSenderId: "800757537162",
+  appId: "1:800757537162:web:cc8ec1f505efff8397d073",
+  measurementId: "G-KBB3STP0W6"
 };
 
-const app  = initializeApp(firebaseConfig);
-const db   = getDatabase(app);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 const auth = getAuth(app);
-const fsdb = getFirestore(app);
 
-// ── Expose instances to window so non-module scripts can use them ──
-window._menderAuth = auth;
-window._menderDb   = db;
-window._menderFsdb = fsdb;
+// 1. EXPORT FIREBASE FUNCTIONS GLOBALLY
+window.fbDB = db;
+window.fbAuth = auth;
+window.fbRef = ref;
+window.fbSet = set;
+window.fbPush = push;
+window.fbUpdate = update;
+window.fbRemove = remove;
+window.fbGet = get;
+window.fbOnValue = onValue;
+window.fbSignInWithEmailAndPassword = signInWithEmailAndPassword;
+window.fbCreateUserWithEmailAndPassword = createUserWithEmailAndPassword;
+window.fbSignOut = signOut;
 
-// Auth + Firestore functions bundle
-window._menderFns = {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-  signOut,
-  doc,
-  setDoc,
-  getDoc
-};
-
-// RTDB functions bundle
-window._menderRtdbFns = { ref, set, remove, push, onValue };
-
-// Firestore convenience bundle
-window._menderFsStoreFns = { doc, setDoc, getDoc };
-
-// ── XSS-safe text setter ──
-function safeText(val) {
-  return String(val === null || val === undefined ? '' : val);
+// 2. KEEP EXISTING CUSTOMER RADAR LISTENER
+// Helper to prevent XSS when injecting Firebase data into HTML
+function sanitize(str) {
+  const d = document.createElement('div');
+  d.textContent = String(str ?? '');
+  return d.innerHTML;
 }
 
-// ── Build one worker card safely (no innerHTML interpolation, no onclick string) ──
-function buildWorkerCard(key, worker) {
-  const card = document.createElement('div');
-  card.className = 'p-7 rounded-[35px] bg-white/80 dark:bg-[#111827]/80 glass border border-white/20 dark:border-slate-700 shadow-2xl hover-card';
-
-  card.innerHTML = `
-    <div class="flex items-start justify-between">
-      <div class="flex items-center gap-4">
-        <img class="w-16 h-16 rounded-2xl object-cover worker-photo" src="https://i.pravatar.cc/150?img=12" />
-        <div>
-          <h4 class="text-2xl font-bold text-slate-900 dark:text-white worker-name"></h4>
-          <p class="text-gray-500 dark:text-gray-400 mt-1 worker-skill"></p>
-        </div>
-      </div>
-      <div class="text-right">
-        <p class="text-yellow-500 font-bold text-lg">⭐ <span class="worker-rating"></span></p>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><span class="worker-trust"></span>% Trust</p>
-      </div>
-    </div>
-    <div class="grid grid-cols-3 gap-4 mt-8">
-      <div class="p-4 rounded-2xl bg-gray-50 dark:bg-[#0f172a]">
-        <p class="text-xs text-gray-500 dark:text-gray-400">Distance</p>
-        <p class="font-bold text-slate-900 dark:text-white mt-2"><span class="worker-dist"></span> km</p>
-      </div>
-      <div class="p-4 rounded-2xl bg-gray-50 dark:bg-[#0f172a]">
-        <p class="text-xs text-gray-500 dark:text-gray-400">ETA</p>
-        <p class="font-bold text-slate-900 dark:text-white mt-2"><span class="worker-eta"></span> mins</p>
-      </div>
-      <div class="p-4 rounded-2xl bg-gray-50 dark:bg-[#0f172a]">
-        <p class="text-xs text-gray-500 dark:text-gray-400">Jobs</p>
-        <p class="font-bold text-slate-900 dark:text-white mt-2"><span class="worker-jobs"></span>+</p>
-      </div>
-    </div>
-    <div class="mt-6 p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900">
-      <p class="text-sm text-blue-700 dark:text-blue-300 font-medium worker-ai"></p>
-    </div>
-    <button class="worker-req-btn w-full mt-8 py-4 rounded-3xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-all duration-300 glow">
-      Request Worker
-    </button>`;
-
-  // Set all user-supplied values via textContent (XSS-safe)
-  if (worker.photo) card.querySelector('.worker-photo').src = worker.photo;
-  card.querySelector('.worker-name').textContent    = safeText(worker.name)          || 'Unknown Worker';
-  card.querySelector('.worker-skill').textContent   = safeText(worker.skill)         || 'Technician';
-  card.querySelector('.worker-rating').textContent  = safeText(worker.rating)        || '4.8';
-  card.querySelector('.worker-trust').textContent   = safeText(worker.trust)         || '95';
-  card.querySelector('.worker-dist').textContent    = safeText(worker.distance)      || '2.3';
-  card.querySelector('.worker-eta').textContent     = safeText(worker.eta)           || '11';
-  card.querySelector('.worker-jobs').textContent    = safeText(worker.completedJobs) || '56';
-  card.querySelector('.worker-ai').textContent      = safeText(worker.aiReason)      || 'Highly experienced nearby technician for this issue.';
-
-  // Wire button via dataset + addEventListener (safe for any name including apostrophes)
-  const btn = card.querySelector('.worker-req-btn');
-  btn.dataset.workerId   = key;
-  btn.dataset.workerName = safeText(worker.name) || 'Worker';
-  btn.addEventListener('click', () => requestWorker(btn.dataset.workerId, btn.dataset.workerName));
-
-  return card;
-}
-
-// ── Listen for online_workers → update customer portal in realtime ──
 const workersRef = ref(db, "online_workers");
 onValue(workersRef, (snapshot) => {
   const data = snapshot.val();
   const container = document.getElementById("workerContainer");
   if (!container) return;
   container.innerHTML = "";
-
   if (!data) {
     container.innerHTML = `
       <div class="col-span-full">
@@ -3036,28 +3186,171 @@ onValue(workersRef, (snapshot) => {
       </div>`;
     return;
   }
-
   Object.keys(data).forEach((key) => {
-    container.appendChild(buildWorkerCard(key, data[key]));
+    const worker = data[key];
+    const sKey = sanitize(key);
+    const sName = sanitize(worker.name || 'Unknown Worker');
+    const sSkill = sanitize(worker.skill || 'Technician');
+    const sRating = sanitize(worker.rating || '4.8');
+    const sTrust = sanitize(worker.trust || '95');
+    const sDistance = sanitize(worker.distance || '2.3');
+    const sEta = sanitize(worker.eta || '11');
+    const sJobs = sanitize(worker.completedJobs || '56');
+    const sReason = sanitize(worker.aiReason || 'Highly experienced nearby technician for this issue.');
+    const sPhoto = sanitize(worker.photo || 'https://i.pravatar.cc/150?img=12');
+    container.innerHTML += `
+      <div class="p-7 rounded-[35px] bg-white/80 dark:bg-[#111827]/80 glass border border-white/20 dark:border-slate-700 shadow-2xl hover-card">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-4">
+            <img src="${sPhoto}" class="w-16 h-16 rounded-2xl object-cover" />
+            <div>
+              <h4 class="text-2xl font-bold text-slate-900 dark:text-white">${sName}</h4>
+              <p class="text-gray-500 dark:text-gray-400 mt-1">${sSkill}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-yellow-500 font-bold text-lg">⭐ ${sRating}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">${sTrust}% Trust</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-4 mt-8">
+          <div class="p-4 rounded-2xl bg-gray-50 dark:bg-[#0f172a]">
+            <p class="text-xs text-gray-500 dark:text-gray-400">Distance</p>
+            <p class="font-bold text-slate-900 dark:text-white mt-2">${sDistance} km</p>
+          </div>
+          <div class="p-4 rounded-2xl bg-gray-50 dark:bg-[#0f172a]">
+            <p class="text-xs text-gray-500 dark:text-gray-400">ETA</p>
+            <p class="font-bold text-slate-900 dark:text-white mt-2">${sEta} mins</p>
+          </div>
+          <div class="p-4 rounded-2xl bg-gray-50 dark:bg-[#0f172a]">
+            <p class="text-xs text-gray-500 dark:text-gray-400">Jobs</p>
+            <p class="font-bold text-slate-900 dark:text-white mt-2">${sJobs}+</p>
+          </div>
+        </div>
+        <div class="mt-6 p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900">
+          <p class="text-sm text-blue-700 dark:text-blue-300 font-medium">
+            ⭐ AI Match: ${sReason}
+          </p>
+        </div>
+        <button onclick="requestWorker('${sKey}', '${sName}')" class="w-full mt-8 py-4 rounded-3xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-all duration-300 glow">
+          Request Worker
+        </button>
+      </div>`;
   });
 });
 
-// ── Send a job request ──
-async function requestWorker(workerId, workerName) {
+window.requestWorker = async function(workerId, workerName) {
+  // Require the customer to be signed in
+  const user = window.fbAuth && window.fbAuth.currentUser;
+  if (!user) {
+    alert('Please sign in to request a worker.');
+    return;
+  }
   const issueEl = document.getElementById("issueText");
-  const issue   = issueEl ? issueEl.value : "";
+  const issue = issueEl ? issueEl.value.trim() : "";
   const requestRef = push(ref(db, "requests"));
   await set(requestRef, {
-    workerId,
-    workerName,
-    issue,
+    customerId: user.uid,
+    customerEmail: user.email || '',
+    workerId, workerName, issue,
     timestamp: Date.now(),
-    status:    "pending"
+    status: "pending"
   });
   alert(`Request sent to ${workerName}`);
+};
+
+// ══════════════════════════════════════════════
+//  REVIEW SYSTEM
+// ══════════════════════════════════════════════
+let reviewPendingRequest = null; // { requestId, workerId, workerName }
+let selectedStars = 0;
+let custRequestsListener = null;
+
+// Start listening for accepted requests once customer is signed in
+function startCustomerRequestsListener(user) {
+  if (custRequestsListener) { custRequestsListener(); custRequestsListener = null; }
+  const reqRef = ref(db, 'requests');
+  custRequestsListener = onValue(reqRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) return;
+    Object.entries(data).forEach(([key, req]) => {
+      if (req.customerId === user.uid && req.status === 'accepted' && !req.reviewed) {
+        // Don't show duplicate modals
+        if (reviewPendingRequest && reviewPendingRequest.requestId === key) return;
+        reviewPendingRequest = { requestId: key, workerId: req.workerId, workerName: req.workerName };
+        openReviewModal(req.workerName);
+      }
+    });
+  });
 }
 
-window.requestWorker = requestWorker;
+function openReviewModal(workerName) {
+  selectedStars = 0;
+  document.getElementById('reviewComment').value = '';
+  document.getElementById('reviewModalWorkerName').textContent = 'How was your experience with ' + (workerName || 'the worker') + '?';
+  document.getElementById('starLabel').textContent = 'Tap a star to rate';
+  document.querySelectorAll('#starPicker span').forEach(s => s.style.color = '#cbd5e1');
+  const btn = document.getElementById('reviewSubmitBtn');
+  btn.disabled = false;
+  btn.textContent = 'Submit Review';
+  document.getElementById('reviewModal').style.display = 'flex';
+}
+
+window.closeReviewModal = function() {
+  document.getElementById('reviewModal').style.display = 'none';
+  // Mark request as reviewed so modal doesn't re-appear
+  if (reviewPendingRequest) {
+    update(ref(db, 'requests/' + reviewPendingRequest.requestId), { reviewed: true });
+    reviewPendingRequest = null;
+  }
+};
+
+window.setReviewStar = function(n) {
+  selectedStars = n;
+  const labels = ['','Terrible','Poor','Okay','Good','Excellent!'];
+  document.getElementById('starLabel').textContent = labels[n] || '';
+  document.querySelectorAll('#starPicker span').forEach(s => {
+    s.style.color = parseInt(s.dataset.star) <= n ? '#f59e0b' : '#cbd5e1';
+    s.style.transform = parseInt(s.dataset.star) <= n ? 'scale(1.15)' : 'scale(1)';
+  });
+};
+
+window.submitReview = async function() {
+  if (!selectedStars) { alert('Please select a star rating.'); return; }
+  if (!reviewPendingRequest) return;
+
+  const user = window.fbAuth && window.fbAuth.currentUser;
+  const btn = document.getElementById('reviewSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  try {
+    const reviewData = {
+      stars: selectedStars,
+      comment: document.getElementById('reviewComment').value.trim(),
+      customerEmail: user ? user.email : '',
+      customerName: user ? (user.displayName || user.email.split('@')[0]) : 'Customer',
+      workerId: reviewPendingRequest.workerId,
+      timestamp: Date.now()
+    };
+
+    // Write review under reviews/<workerId>/<newId>
+    const newRevRef = push(ref(db, 'reviews/' + reviewPendingRequest.workerId));
+    await set(newRevRef, reviewData);
+
+    // Mark request as reviewed so modal won't reappear
+    await update(ref(db, 'requests/' + reviewPendingRequest.requestId), { reviewed: true });
+
+    reviewPendingRequest = null;
+    document.getElementById('reviewModal').style.display = 'none';
+    alert('✅ Thank you for your review!');
+  } catch (err) {
+    console.error('Review submit error:', err);
+    btn.disabled = false;
+    btn.textContent = 'Submit Review';
+    alert('Failed to submit review. Please try again.');
+  }
+};
 </script>
 
 </body>
