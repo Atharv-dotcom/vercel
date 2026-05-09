@@ -659,8 +659,8 @@
 
       <!-- Tabs -->
       <div class="flex gap-2 p-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl mb-8">
-        <button class="tab-btn active flex-1" id="loginTab" onclick="fixitSwitchTab('login')">Login</button>
-        <button class="tab-btn flex-1" id="signupTab" onclick="fixitSwitchTab('signup')">Sign Up</button>
+        <button class="tab-btn active flex-1" id="loginTab" onclick="switchTab('login')">Login</button>
+        <button class="tab-btn flex-1" id="signupTab" onclick="switchTab('signup')">Sign Up</button>
       </div>
 
       <!-- LOGIN FORM -->
@@ -688,7 +688,7 @@
             <span id="loginBtnText">Sign In →</span>
           </button>
           <p class="text-center text-sm text-slate-500 mt-4">
-            Don't have an account? <button class="text-blue-600 font-semibold" onclick="fixitSwitchTab('signup')">Create one free</button>
+            Don't have an account? <button class="text-blue-600 font-semibold" onclick="switchTab('signup')">Create one free</button>
           </p>
         </div>
         <!-- Demo note -->
@@ -1249,10 +1249,10 @@
             </div>
             <table class="w-full text-left">
               <thead><tr class="bg-slate-50 border-b text-xs uppercase tracking-wider text-slate-400 font-bold">
-                <th class="py-4 px-6">Job ID</th><th class="py-4 px-6">Service</th><th class="py-4 px-6">Customer</th><th class="py-4 px-6">Date</th><th class="py-4 px-6">Status</th><th class="py-4 px-6 text-right">Payout</th>
+                <th class="py-4 px-6">Job ID</th><th class="py-4 px-6">Service</th><th class="py-4 px-6">Customer</th><th class="py-4 px-6">Date</th><th class="py-4 px-6">Status</th><th class="py-4 px-6 text-right">Payout</th><th class="py-4 px-6 text-right">Action</th>
               </tr></thead>
               <tbody id="allJobsTable" class="text-sm">
-                <tr id="allJobsEmpty"><td colspan="6" class="py-10 text-center text-slate-400 text-sm">No jobs yet. Accepted requests will appear here.</td></tr>
+                <tr id="allJobsEmpty"><td colspan="7" class="py-10 text-center text-slate-400 text-sm">No jobs yet. Accepted requests will appear here.</td></tr>
               </tbody>
             </table>
           </div>
@@ -1293,7 +1293,7 @@
 
         <!-- ══ REVIEWS VIEW ══ -->
         <div id="view-reviews" class="view-section space-y-6">
-          <!-- Rating summary — populated by loadReviews() -->
+          
           <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 flex gap-10 items-center">
             <div class="text-center shrink-0">
               <div class="text-6xl font-display font-extrabold text-slate-800" id="reviewAvgScore">—</div>
@@ -1308,7 +1308,7 @@
               <div class="flex items-center gap-3"><span class="text-xs w-4 text-slate-500">1</span><div class="flex-1 bg-slate-100 rounded-full h-2"><div id="bar1" class="bg-slate-200 h-2 rounded-full" style="width:0%"></div></div><span class="text-xs text-slate-500 w-8" id="pct1">0%</span></div>
             </div>
           </div>
-          <!-- Individual review cards — populated by loadReviews() -->
+          
           <div id="reviewsList" class="space-y-4">
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 text-center text-slate-400 text-sm">
               No reviews yet. Reviews left by customers will appear here.
@@ -1501,7 +1501,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ══════════════════════════════════════════════
 //  AUTH
 // ══════════════════════════════════════════════
-function switchTab(tab) {
+window.switchTab = function switchTab(tab) {
   document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
   document.getElementById('signupForm').classList.toggle('hidden', tab !== 'signup');
   document.getElementById('loginTab').classList.toggle('active', tab === 'login');
@@ -1954,7 +1954,6 @@ function loadApp() {
 
   renderAppSkills();
   renderProfileSkills();
-  loadReviews();
   lucide.createIcons();
 
   if (isNewUser) showToast('🎉 Welcome to Mender, ' + currentUser.firstName + '!', 'green');
@@ -1969,7 +1968,6 @@ function handleLogout() {
   isListening = false; isProcessingAI = false;
   appSkills = []; obSkills =[];
   totalRevenue = 0; totalJobs = 0;
-  if (reviewsListener) { reviewsListener(); reviewsListener = null; }
   // Reset stat cards
   document.getElementById('statRevenue').textContent = '₹0';
   document.getElementById('statJobs').textContent = '0';
@@ -2070,7 +2068,8 @@ async function toggleOnline() {
         eta:           loc.lat ? '~10'    : '~15',
         photo:         'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name) + '&background=random',
         aiReason:      skills.length > 0 ? 'Matches ' + skills[0] + ' requirement' : 'Experienced local technician',
-        completedJobs: currentUser.completedJobs
+        completedJobs: currentUser.completedJobs,
+        connectedAt:   Date.now()
       });
     }
     
@@ -2257,88 +2256,6 @@ function renderProfileSkills() {
   });
 }
 
-// ══════════════════════════════════════════════
-//  REVIEWS — load & render from Firebase
-// ══════════════════════════════════════════════
-let reviewsListener = null;
-
-function loadReviews() {
-  if (!currentUser || !currentUser.id || !window.fbDB) return;
-  if (reviewsListener) { reviewsListener(); reviewsListener = null; }
-
-  const revRef = window.fbRef(window.fbDB, 'reviews/' + currentUser.id);
-  reviewsListener = window.fbOnValue(revRef, (snapshot) => {
-    const data = snapshot.val();
-    renderReviews(data);
-  });
-}
-
-function renderReviews(data) {
-  const list = document.getElementById('reviewsList');
-  const avgEl = document.getElementById('reviewAvgScore');
-  const starsEl = document.getElementById('reviewAvgStars');
-  const countEl = document.getElementById('reviewTotalCount');
-  if (!list) return;
-
-  if (!data) {
-    list.innerHTML = '<div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 text-center text-slate-400 text-sm">No reviews yet. Reviews left by customers will appear here.</div>';
-    avgEl.textContent = '—';
-    starsEl.textContent = '☆☆☆☆☆';
-    countEl.textContent = '0 reviews';
-    [1,2,3,4,5].forEach(n => {
-      document.getElementById('bar'+n).style.width = '0%';
-      document.getElementById('pct'+n).textContent = '0%';
-    });
-    return;
-  }
-
-  const reviews = Object.values(data).sort((a,b) => b.timestamp - a.timestamp);
-  const total = reviews.length;
-  const sum = reviews.reduce((s, r) => s + r.stars, 0);
-  const avg = total ? (sum / total).toFixed(1) : '—';
-
-  // Update summary
-  avgEl.textContent = avg;
-  const fullStars = Math.round(parseFloat(avg));
-  starsEl.textContent = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
-  countEl.textContent = total + ' review' + (total !== 1 ? 's' : '');
-
-  // Update bar chart
-  [1,2,3,4,5].forEach(n => {
-    const cnt = reviews.filter(r => r.stars === n).length;
-    const pct = total ? Math.round(cnt / total * 100) : 0;
-    document.getElementById('bar'+n).style.width = pct + '%';
-    document.getElementById('pct'+n).textContent = pct + '%';
-  });
-
-  // Persist computed rating back to workers/<uid>
-  if (currentUser && currentUser.id && window.fbDB && avg !== '—') {
-    const newRating = parseFloat(avg);
-    currentUser.rating = newRating;
-    window.fbUpdate(window.fbRef(window.fbDB, 'workers/' + currentUser.id), { rating: newRating });
-    document.getElementById('statRating').textContent = avg + ' ';
-    const pb = document.getElementById('profileRatingBadge');
-    if (pb) pb.textContent = avg;
-  }
-
-  // Render individual cards
-  list.innerHTML = reviews.map(r => {
-    const stars = '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars);
-    const name = r.customerName || r.customerEmail || 'Customer';
-    const date = new Date(r.timestamp).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
-    return `<div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-      <div class="flex justify-between items-start mb-3">
-        <div>
-          <p class="font-bold text-slate-800">${escapeHtml(name)}</p>
-          <p class="text-yellow-400 text-sm">${stars}</p>
-        </div>
-        <span class="text-xs text-slate-400">${date}</span>
-      </div>
-      ${r.comment ? `<p class="text-slate-600 text-sm">${escapeHtml(r.comment)}</p>` : ''}
-    </div>`;
-  }).join('');
-}
-
 function escapeHtml(str) {
   const d = document.createElement('div');
   d.textContent = String(str ?? '');
@@ -2350,6 +2267,12 @@ function addProfileSkill() {
   if (!val) return;
   if (!appSkills.includes(val)) { appSkills.push(val); renderAppSkills(); renderProfileSkills(); }
   document.getElementById('profileSkillAdd').value = '';
+}
+
+function removeAppSkill(i) {
+  appSkills.splice(i, 1);
+  renderAppSkills();
+  renderProfileSkills();
 }
 
 // ══════════════════════════════════════════════
@@ -2412,6 +2335,27 @@ function declineJob() {
   showToast('Job declined. Waiting for next request...', 'slate');
 }
 
+function cancelService(reqId, btn) {
+  if (!confirm('Are you sure you want to cancel this service?')) return;
+
+  // Update Firebase
+  if (reqId && !reqId.startsWith('local-') && window.fbDB) {
+    window.fbUpdate(window.fbRef(window.fbDB, 'requests/' + reqId), { status: 'cancelled' });
+  }
+
+  // Update row UI
+  const row = document.getElementById('row-' + reqId);
+  if (row) {
+    row.dataset.status = 'Cancelled';
+    const statusCell = row.querySelector(`[class*="status-cell"]`);
+    if (statusCell) statusCell.innerHTML = '<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">Cancelled</span>';
+    if (btn) btn.closest('td').innerHTML = '<span class="text-xs text-slate-400 font-medium">Cancelled</span>';
+  }
+
+  showToast('🚫 Service cancelled.', 'red');
+  filterJobs();
+}
+
 function acceptJob() {
   const btn = document.getElementById('acceptBtn');
   btn.disabled = true;
@@ -2440,13 +2384,15 @@ function acceptJob() {
       const now = new Date();
       const timeStr = 'Today, ' + now.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
       const jobId = '#FX-' + (9021 + totalJobs);
-      const row = `<tr class="border-b hover:bg-slate-50 job-row" data-status="In Progress">
+      const savedReqId = currentRequestId || ('local-' + Date.now());
+      const row = `<tr class="border-b hover:bg-slate-50 job-row" data-status="In Progress" id="row-${savedReqId}">
         <td class="py-4 px-6 font-mono text-xs text-slate-400">${jobId}</td>
         <td class="py-4 px-6 font-semibold">${currentJob.title}</td>
         <td class="py-4 px-6 text-slate-500">${currentJob.customer}</td>
         <td class="py-4 px-6 text-slate-500">${timeStr}</td>
-        <td class="py-4 px-6"><span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">In Progress</span></td>
+        <td class="py-4 px-6 status-cell-${savedReqId}"><span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">In Progress</span></td>
         <td class="py-4 px-6 text-right font-bold">Pending</td>
+        <td class="py-4 px-6 text-right"><button onclick="cancelService('${savedReqId}', this)" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold transition-colors">✕ Cancel</button></td>
       </tr>`;
       document.getElementById('allJobsTable').insertAdjacentHTML('afterbegin', row);
       document.getElementById('jobHistoryTable').insertAdjacentHTML('afterbegin', row.replace(`<td class="py-4 px-6 text-slate-500">${currentJob.customer}</td>`,''));
@@ -2538,7 +2484,7 @@ function showToast(msg, color = 'slate') {
 }
 
 // Expose FixIt globals to window
-window.fixitSwitchTab = switchTab;
+window.cancelService = cancelService;
 window.handleLogin = handleLogin;
 window.nextStep = nextStep;
 window.goToApp = goToApp;
@@ -2867,35 +2813,7 @@ window.startMic = startMic;
 </div>
 <!-- ══════════════════════════ END MAIN APP ══════════════════════════ -->
 
-<!-- ══════════════════════════ REVIEW MODAL ══════════════════════════ -->
-<div id="reviewModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,0.75);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:28px;padding:40px;width:100%;max-width:440px;margin:16px;box-shadow:0 24px 80px rgba(0,0,0,0.25);">
-    <div style="text-align:center;margin-bottom:28px;">
-      <div style="font-size:2.8rem;">⭐</div>
-      <h3 style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#0f172a;margin:8px 0 4px;">Rate Your Worker</h3>
-      <p style="color:#64748b;font-size:0.9rem;" id="reviewModalWorkerName">How was your experience?</p>
-    </div>
 
-    <!-- Star picker -->
-    <div style="display:flex;justify-content:center;gap:10px;margin-bottom:24px;" id="starPicker">
-      <span data-star="1" onclick="setReviewStar(1)" style="font-size:2.4rem;cursor:pointer;color:#cbd5e1;transition:color 0.15s;">★</span>
-      <span data-star="2" onclick="setReviewStar(2)" style="font-size:2.4rem;cursor:pointer;color:#cbd5e1;transition:color 0.15s;">★</span>
-      <span data-star="3" onclick="setReviewStar(3)" style="font-size:2.4rem;cursor:pointer;color:#cbd5e1;transition:color 0.15s;">★</span>
-      <span data-star="4" onclick="setReviewStar(4)" style="font-size:2.4rem;cursor:pointer;color:#cbd5e1;transition:color 0.15s;">★</span>
-      <span data-star="5" onclick="setReviewStar(5)" style="font-size:2.4rem;cursor:pointer;color:#cbd5e1;transition:color 0.15s;">★</span>
-    </div>
-    <p style="text-align:center;font-size:0.85rem;color:#94a3b8;margin-bottom:20px;" id="starLabel">Tap a star to rate</p>
-
-    <!-- Comment -->
-    <textarea id="reviewComment" rows="3" placeholder="Share details about your experience (optional)..."
-      style="width:100%;padding:14px 16px;border:1.5px solid #e2e8f0;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:14px;color:#1e293b;background:#f8fafc;resize:none;outline:none;box-sizing:border-box;"></textarea>
-
-    <div style="display:flex;gap:12px;margin-top:20px;">
-      <button onclick="closeReviewModal()" style="flex:1;padding:13px;border:1.5px solid #e2e8f0;border-radius:12px;font-weight:700;color:#64748b;background:#fff;cursor:pointer;font-size:14px;">Skip</button>
-      <button onclick="submitReview()" id="reviewSubmitBtn" style="flex:2;padding:13px;background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;">Submit Review</button>
-    </div>
-  </div>
-</div>
 
 
 <!-- Script for Customer portal -->
@@ -2915,8 +2833,9 @@ function enterApp() {
   document.getElementById('authPage').style.display = 'none';
   document.getElementById('mainApp').style.display = 'block';
   history.pushState({ page: 'app' }, '', '');
-  // Start listening for accepted requests so review modal can fire
+  // Start listening for accepted/cancelled requests
   const user = window.fbAuth && window.fbAuth.currentUser;
+  if (user) startCustomerRequestsListener(user);
 }
 
 function signOut() {
@@ -3170,13 +3089,36 @@ function sanitize(str) {
   return d.innerHTML;
 }
 
+const WORKER_STALE_MS = 30 * 60 * 1000;
+
+function onlineSinceLabel(ts) {
+  if (!ts) return 'Online now';
+  const m = Math.floor((Date.now() - ts) / 60000);
+  if (m < 1) return 'Just came online';
+  if (m < 60) return `Online ${m} min ago`;
+  return `Online ${Math.floor(m/60)}h ago`;
+}
+
 const workersRef = ref(db, "online_workers");
 onValue(workersRef, (snapshot) => {
   const data = snapshot.val();
   const container = document.getElementById("workerContainer");
   if (!container) return;
   container.innerHTML = "";
-  if (!data) {
+
+  const liveEntries = [];
+  if (data) {
+    Object.keys(data).forEach((key) => {
+      const w = data[key];
+      if (!w.connectedAt || (Date.now() - w.connectedAt) > WORKER_STALE_MS) {
+        remove(ref(db, 'online_workers/' + key)).catch(() => {});
+      } else {
+        liveEntries.push({ key, worker: w });
+      }
+    });
+  }
+
+  if (liveEntries.length === 0) {
     container.innerHTML = `
       <div class="col-span-full">
         <div class="p-10 rounded-[35px] bg-white/80 dark:bg-[#111827]/80 glass border border-white/20 dark:border-slate-700 shadow-xl text-center">
@@ -3186,8 +3128,8 @@ onValue(workersRef, (snapshot) => {
       </div>`;
     return;
   }
-  Object.keys(data).forEach((key) => {
-    const worker = data[key];
+
+  liveEntries.forEach(({ key, worker }) => {
     const sKey = sanitize(key);
     const sName = sanitize(worker.name || 'Unknown Worker');
     const sSkill = sanitize(worker.skill || 'Technician');
@@ -3195,9 +3137,10 @@ onValue(workersRef, (snapshot) => {
     const sTrust = sanitize(worker.trust || '95');
     const sDistance = sanitize(worker.distance || '2.3');
     const sEta = sanitize(worker.eta || '11');
-    const sJobs = sanitize(worker.completedJobs || '56');
-    const sReason = sanitize(worker.aiReason || 'Highly experienced nearby technician for this issue.');
+    const sJobs = sanitize(worker.completedJobs || '0');
+    const sReason = sanitize(worker.aiReason || 'Experienced local technician.');
     const sPhoto = sanitize(worker.photo || 'https://i.pravatar.cc/150?img=12');
+    const sLabel = sanitize(onlineSinceLabel(worker.connectedAt));
     container.innerHTML += `
       <div class="p-7 rounded-[35px] bg-white/80 dark:bg-[#111827]/80 glass border border-white/20 dark:border-slate-700 shadow-2xl hover-card">
         <div class="flex items-start justify-between">
@@ -3206,6 +3149,9 @@ onValue(workersRef, (snapshot) => {
             <div>
               <h4 class="text-2xl font-bold text-slate-900 dark:text-white">${sName}</h4>
               <p class="text-gray-500 dark:text-gray-400 mt-1">${sSkill}</p>
+              <span class="inline-flex items-center gap-1.5 mt-1.5 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
+                <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block"></span>${sLabel}
+              </span>
             </div>
           </div>
           <div class="text-right">
@@ -3228,9 +3174,7 @@ onValue(workersRef, (snapshot) => {
           </div>
         </div>
         <div class="mt-6 p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900">
-          <p class="text-sm text-blue-700 dark:text-blue-300 font-medium">
-            ⭐ AI Match: ${sReason}
-          </p>
+          <p class="text-sm text-blue-700 dark:text-blue-300 font-medium">⭐ AI Match: ${sReason}</p>
         </div>
         <button onclick="requestWorker('${sKey}', '${sName}')" class="w-full mt-8 py-4 rounded-3xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-all duration-300 glow">
           Request Worker
@@ -3256,17 +3200,49 @@ window.requestWorker = async function(workerId, workerName) {
     timestamp: Date.now(),
     status: "pending"
   });
-  alert(`Request sent to ${workerName}`);
+
+  // Update the button to show "Pending"
+  const btn = document.querySelector(`[onclick="requestWorker('${workerId}', '${workerName}')"]`);
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '⏳ Request Sent — Waiting...';
+    btn.className = 'w-full mt-8 py-4 rounded-3xl bg-yellow-500 text-white font-medium cursor-not-allowed transition-all duration-300';
+    btn.setAttribute('data-req-id', requestRef.key);
+    btn.setAttribute('data-worker-id', workerId);
+  }
+
+  // Listen for status changes on this request
+  const reqStatusRef = ref(db, 'requests/' + requestRef.key);
+  const unsubscribe = onValue(reqStatusRef, (snap) => {
+    const data = snap.val();
+    if (!data) return;
+    const cardBtn = document.querySelector(`[data-req-id="${requestRef.key}"]`);
+    if (data.status === 'accepted') {
+      if (cardBtn) {
+        cardBtn.textContent = '✓ Accepted';
+        cardBtn.className = 'w-full mt-8 py-4 rounded-3xl bg-green-600 text-white font-bold cursor-default transition-all duration-300';
+      }
+      unsubscribe();
+    } else if (data.status === 'declined' || data.status === 'cancelled') {
+      if (cardBtn) {
+        cardBtn.disabled = false;
+        cardBtn.textContent = 'Request Worker';
+        cardBtn.className = 'w-full mt-8 py-4 rounded-3xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-all duration-300 glow';
+        cardBtn.removeAttribute('data-req-id');
+      }
+      unsubscribe();
+    }
+  });
 };
 
 // ══════════════════════════════════════════════
 //  REVIEW SYSTEM
 // ══════════════════════════════════════════════
-let reviewPendingRequest = null; // { requestId, workerId, workerName }
-let selectedStars = 0;
+// customer request tracking
 let custRequestsListener = null;
+const notifiedRequests = new Set(); // prevent duplicate notifications
 
-// Start listening for accepted requests once customer is signed in
+// Start listening for cancelled requests once customer is signed in
 function startCustomerRequestsListener(user) {
   if (custRequestsListener) { custRequestsListener(); custRequestsListener = null; }
   const reqRef = ref(db, 'requests');
@@ -3274,83 +3250,79 @@ function startCustomerRequestsListener(user) {
     const data = snapshot.val();
     if (!data) return;
     Object.entries(data).forEach(([key, req]) => {
-      if (req.customerId === user.uid && req.status === 'accepted' && !req.reviewed) {
-        // Don't show duplicate modals
-        if (reviewPendingRequest && reviewPendingRequest.requestId === key) return;
-        reviewPendingRequest = { requestId: key, workerId: req.workerId, workerName: req.workerName };
-        openReviewModal(req.workerName);
+      if (req.customerId !== user.uid) return;
+
+      if (req.status === 'cancelled' && !notifiedRequests.has(key + '-cancelled')) {
+        notifiedRequests.add(key + '-cancelled');
+
+        // 1. Update the request button on the worker card (if still visible)
+        const cardBtn = document.querySelector(`[data-req-id="${key}"]`);
+        if (cardBtn) {
+          cardBtn.disabled = false;
+          cardBtn.textContent = '⚠ Cancelled by Worker — Request Again';
+          cardBtn.className = 'w-full mt-8 py-4 rounded-3xl bg-orange-500 text-white font-medium hover:bg-orange-600 transition-all duration-300 cursor-pointer';
+          cardBtn.removeAttribute('data-req-id');
+          cardBtn.removeAttribute('data-worker-id');
+          const wId = req.workerId || '';
+          const wName = req.workerName || 'Worker';
+          cardBtn.setAttribute('onclick', `requestWorker('${wId}', '${wName}')`);
+        }
+
+        // 2. Show cancellation banner
+        showCancellationBanner(req.workerName || 'The worker');
       }
     });
   });
 }
 
-function openReviewModal(workerName) {
-  selectedStars = 0;
-  document.getElementById('reviewComment').value = '';
-  document.getElementById('reviewModalWorkerName').textContent = 'How was your experience with ' + (workerName || 'the worker') + '?';
-  document.getElementById('starLabel').textContent = 'Tap a star to rate';
-  document.querySelectorAll('#starPicker span').forEach(s => s.style.color = '#cbd5e1');
-  const btn = document.getElementById('reviewSubmitBtn');
-  btn.disabled = false;
-  btn.textContent = 'Submit Review';
-  document.getElementById('reviewModal').style.display = 'flex';
+function showCancellationBanner(workerName) {
+  // Remove any existing banner
+  const existing = document.getElementById('cancellationBanner');
+  if (existing) existing.remove();
+
+  const banner = document.createElement('div');
+  banner.id = 'cancellationBanner';
+  banner.style.cssText = `
+    position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+    z-index: 99999; width: 90%; max-width: 520px;
+    background: #fff7ed; border: 2px solid #fb923c;
+    border-radius: 20px; padding: 20px 24px;
+    box-shadow: 0 12px 40px rgba(251,146,60,0.25);
+    display: flex; align-items: flex-start; gap: 16px;
+    animation: slideDownFade 0.4s cubic-bezier(0.16,1,0.3,1);
+  `;
+  banner.innerHTML = `
+    <style>
+      @keyframes slideDownFade { from { opacity:0; transform:translateX(-50%) translateY(-20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+    </style>
+    <div style="width:44px;height:44px;border-radius:12px;background:#fb923c;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;">🚫</div>
+    <div style="flex:1;">
+      <p style="font-weight:800;font-size:1rem;color:#9a3412;margin:0 0 4px;">Service Cancelled</p>
+      <p style="color:#c2410c;font-size:0.88rem;margin:0 0 14px;line-height:1.5;">
+        <strong>${workerName}</strong> has cancelled your service request. You can request a different worker below.
+      </p>
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('workersSection').scrollIntoView({behavior:'smooth'}); document.getElementById('cancellationBanner').remove();"
+          style="padding:9px 20px;background:#ea580c;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:0.85rem;cursor:pointer;">
+          Find Another Worker →
+        </button>
+        <button onclick="document.getElementById('cancellationBanner').remove();"
+          style="padding:9px 16px;background:transparent;color:#9a3412;border:1.5px solid #fb923c;border-radius:10px;font-weight:600;font-size:0.85rem;cursor:pointer;">
+          Dismiss
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(banner);
+
+  // Auto-dismiss after 12 seconds
+  setTimeout(() => { if (banner.parentNode) banner.remove(); }, 12000);
 }
 
-window.closeReviewModal = function() {
-  document.getElementById('reviewModal').style.display = 'none';
-  // Mark request as reviewed so modal doesn't re-appear
-  if (reviewPendingRequest) {
-    update(ref(db, 'requests/' + reviewPendingRequest.requestId), { reviewed: true });
-    reviewPendingRequest = null;
-  }
-};
+// Expose to window so non-module scripts can call them
+window.startCustomerRequestsListener = startCustomerRequestsListener;
+window.showCancellationBanner = showCancellationBanner;
 
-window.setReviewStar = function(n) {
-  selectedStars = n;
-  const labels = ['','Terrible','Poor','Okay','Good','Excellent!'];
-  document.getElementById('starLabel').textContent = labels[n] || '';
-  document.querySelectorAll('#starPicker span').forEach(s => {
-    s.style.color = parseInt(s.dataset.star) <= n ? '#f59e0b' : '#cbd5e1';
-    s.style.transform = parseInt(s.dataset.star) <= n ? 'scale(1.15)' : 'scale(1)';
-  });
-};
-
-window.submitReview = async function() {
-  if (!selectedStars) { alert('Please select a star rating.'); return; }
-  if (!reviewPendingRequest) return;
-
-  const user = window.fbAuth && window.fbAuth.currentUser;
-  const btn = document.getElementById('reviewSubmitBtn');
-  btn.disabled = true;
-  btn.textContent = 'Submitting...';
-
-  try {
-    const reviewData = {
-      stars: selectedStars,
-      comment: document.getElementById('reviewComment').value.trim(),
-      customerEmail: user ? user.email : '',
-      customerName: user ? (user.displayName || user.email.split('@')[0]) : 'Customer',
-      workerId: reviewPendingRequest.workerId,
-      timestamp: Date.now()
-    };
-
-    // Write review under reviews/<workerId>/<newId>
-    const newRevRef = push(ref(db, 'reviews/' + reviewPendingRequest.workerId));
-    await set(newRevRef, reviewData);
-
-    // Mark request as reviewed so modal won't reappear
-    await update(ref(db, 'requests/' + reviewPendingRequest.requestId), { reviewed: true });
-
-    reviewPendingRequest = null;
-    document.getElementById('reviewModal').style.display = 'none';
-    alert('✅ Thank you for your review!');
-  } catch (err) {
-    console.error('Review submit error:', err);
-    btn.disabled = false;
-    btn.textContent = 'Submit Review';
-    alert('Failed to submit review. Please try again.');
-  }
-};
 </script>
 
 </body>
